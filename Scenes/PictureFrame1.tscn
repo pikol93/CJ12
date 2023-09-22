@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bkvhrlr8edvci"]
+
+[ext_resource type="PackedScene" uid="uid://cjhkfduxixl7i" path="res://Resources/Models/PictureFrame.glb" id="1_av38p"]
+
+[node name="PictureFrame1" type="Node3D"]
+
+[node name="PictureFrame" parent="." instance=ExtResource("1_av38p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.53, -0.81, 0)

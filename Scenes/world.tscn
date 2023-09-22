@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://2a1glglpvybu"]
+[gd_scene load_steps=10 format=3 uid="uid://2a1glglpvybu"]
 
 [ext_resource type="PackedScene" uid="uid://da20672b4qq04" path="res://Scenes/player.tscn" id="1_n2n6c"]
 [ext_resource type="PackedScene" uid="uid://cf0q7o4bp7dv1" path="res://Scenes/Wardrobe1.tscn" id="2_jloo2"]
+[ext_resource type="PackedScene" uid="uid://bkvhrlr8edvci" path="res://Scenes/PictureFrame1.tscn" id="3_wketk"]
 
 [sub_resource type="Environment" id="Environment_v8vof"]
 ambient_light_source = 2
@@ -10,12 +11,18 @@ reflected_light_source = 1
 
 [sub_resource type="CameraAttributesPhysical" id="CameraAttributesPhysical_rrm34"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_1nkjw"]
-size = Vector3(10, 2, 10)
+[sub_resource type="BoxShape3D" id="BoxShape3D_x1gn1"]
+size = Vector3(20, 2, 20)
 
 [sub_resource type="QuadMesh" id="QuadMesh_jhmdj"]
 size = Vector2(20, 20)
 orientation = 1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1nkjw"]
+size = Vector3(5, 10, 10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ws6ps"]
+size = Vector3(5, 10, 10)
 
 [node name="World" type="Node3D"]
 
@@ -23,17 +30,29 @@ orientation = 1
 environment = SubResource("Environment_v8vof")
 camera_attributes = SubResource("CameraAttributesPhysical_rrm34")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
+[node name="Floor" type="StaticBody3D" parent="."]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("BoxShape3D_x1gn1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("QuadMesh_jhmdj")
+
+[node name="Wall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.59835, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wall"]
 shape = SubResource("BoxShape3D_1nkjw")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
-mesh = SubResource("QuadMesh_jhmdj")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Wall"]
+mesh = SubResource("BoxMesh_ws6ps")
 
 [node name="Player" parent="." instance=ExtResource("1_n2n6c")]
 MouseSensitivity = 0.01
 
 [node name="Wardrobe1" parent="." instance=ExtResource("2_jloo2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.00401, 0, -1.67267)
+
+[node name="PictureFrame1" parent="." instance=ExtResource("3_wketk")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 2, 0, -2)
