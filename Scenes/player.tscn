@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://da20672b4qq04"]
+
+[ext_resource type="Script" path="res://Scripts/Character.cs" id="1_3fb61"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_beuox"]
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_3fb61")
+MovementSpeed = 4.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_beuox")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)

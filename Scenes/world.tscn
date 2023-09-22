@@ -1,7 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://2a1glglpvybu"]
+[gd_scene load_steps=6 format=3 uid="uid://2a1glglpvybu"]
+
+[ext_resource type="PackedScene" uid="uid://da20672b4qq04" path="res://Scenes/player.tscn" id="1_n2n6c"]
 
 [sub_resource type="Environment" id="Environment_v8vof"]
-ambient_light_source = 1
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
 reflected_light_source = 1
 
 [sub_resource type="CameraAttributesPhysical" id="CameraAttributesPhysical_rrm34"]
@@ -27,3 +30,5 @@ shape = SubResource("BoxShape3D_1nkjw")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
 mesh = SubResource("QuadMesh_jhmdj")
+
+[node name="Player" parent="." instance=ExtResource("1_n2n6c")]
