@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://2a1glglpvybu"]
+
+[sub_resource type="Environment" id="Environment_v8vof"]
+ambient_light_source = 1
+reflected_light_source = 1
+
+[sub_resource type="CameraAttributesPhysical" id="CameraAttributesPhysical_rrm34"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1nkjw"]
+size = Vector3(10, 2, 10)
+
+[sub_resource type="QuadMesh" id="QuadMesh_jhmdj"]
+size = Vector2(20, 20)
+orientation = 1
+
+[node name="World" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_v8vof")
+camera_attributes = SubResource("CameraAttributesPhysical_rrm34")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("BoxShape3D_1nkjw")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+mesh = SubResource("QuadMesh_jhmdj")
