@@ -7,10 +7,14 @@
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_3fb61")
 MovementSpeed = 4.0
+MouseSensitivity = 1.0
+NeckNodePath = NodePath("Neck")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("CylinderShape3D_beuox")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Neck" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Neck"]
