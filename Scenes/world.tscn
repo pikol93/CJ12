@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://2a1glglpvybu"]
+[gd_scene load_steps=11 format=3 uid="uid://2a1glglpvybu"]
 
 [ext_resource type="PackedScene" uid="uid://da20672b4qq04" path="res://Scenes/player.tscn" id="1_n2n6c"]
+[ext_resource type="Material" uid="uid://36jbusfxrh4k" path="res://Resources/Materials/environment_shader.tres" id="1_orm6j"]
 [ext_resource type="PackedScene" uid="uid://cf0q7o4bp7dv1" path="res://Scenes/Wardrobe1.tscn" id="2_jloo2"]
 [ext_resource type="PackedScene" uid="uid://bkvhrlr8edvci" path="res://Scenes/PictureFrame1.tscn" id="3_wketk"]
 
@@ -15,6 +16,7 @@ reflected_light_source = 1
 size = Vector3(20, 2, 20)
 
 [sub_resource type="QuadMesh" id="QuadMesh_jhmdj"]
+material = ExtResource("1_orm6j")
 size = Vector2(20, 20)
 orientation = 1
 
@@ -38,6 +40,7 @@ shape = SubResource("BoxShape3D_x1gn1")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
 mesh = SubResource("QuadMesh_jhmdj")
+surface_material_override/0 = ExtResource("1_orm6j")
 
 [node name="Wall" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.59835, 0, 0)
@@ -47,6 +50,7 @@ shape = SubResource("BoxShape3D_1nkjw")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Wall"]
 mesh = SubResource("BoxMesh_ws6ps")
+surface_material_override/0 = ExtResource("1_orm6j")
 
 [node name="Player" parent="." instance=ExtResource("1_n2n6c")]
 MouseSensitivity = 0.01

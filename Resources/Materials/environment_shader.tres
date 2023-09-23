@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://36jbusfxrh4k"]
+
+[ext_resource type="Material" uid="uid://bcq87mwojlc3f" path="res://Resources/Materials/environment_edge_detection.tres" id="1_5gwfn"]
+[ext_resource type="Shader" path="res://Resources/Shaders/normal_to_albedo.gdshader" id="1_bpasq"]
+
+[resource]
+render_priority = 0
+next_pass = ExtResource("1_5gwfn")
+shader = ExtResource("1_bpasq")

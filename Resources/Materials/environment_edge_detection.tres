@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bcq87mwojlc3f"]
+
+[ext_resource type="Shader" path="res://Resources/Shaders/edge_detection.gdshader" id="1_gby2k"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_gby2k")
+shader_parameter/edge_detection_threshold = 0.001
+shader_parameter/neighbour_distance = 1.0
+shader_parameter/albedo = Color(0, 0, 0, 1)
+shader_parameter/edge_color = Color(1, 1, 1, 1)

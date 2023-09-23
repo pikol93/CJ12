@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://dtgqy8lqi4ujf"]
+
+[ext_resource type="Material" uid="uid://bmdcsrwufbfxh" path="res://Resources/Materials/monster_edge_detection.tres" id="1_stbtb"]
+[ext_resource type="Shader" path="res://Resources/Shaders/normal_to_albedo.gdshader" id="2_vsfoq"]
+
+[resource]
+render_priority = 0
+next_pass = ExtResource("1_stbtb")
+shader = ExtResource("2_vsfoq")
