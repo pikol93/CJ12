@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://2a1glglpvybu"]
+[gd_scene load_steps=12 format=3 uid="uid://2a1glglpvybu"]
 
 [ext_resource type="PackedScene" uid="uid://da20672b4qq04" path="res://Scenes/player.tscn" id="1_n2n6c"]
 [ext_resource type="Material" uid="uid://36jbusfxrh4k" path="res://Resources/Materials/environment_shader.tres" id="1_orm6j"]
@@ -13,17 +13,20 @@ reflected_light_source = 1
 [sub_resource type="CameraAttributesPhysical" id="CameraAttributesPhysical_rrm34"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_x1gn1"]
-size = Vector3(20, 2, 20)
+size = Vector3(4, 0, 40)
 
 [sub_resource type="QuadMesh" id="QuadMesh_jhmdj"]
 material = ExtResource("1_orm6j")
-size = Vector2(20, 20)
+size = Vector2(40, 40)
 orientation = 1
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1nkjw"]
 size = Vector3(5, 10, 10)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ws6ps"]
+size = Vector3(5, 10, 10)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rabit"]
 size = Vector3(5, 10, 10)
 
 [node name="World" type="Node3D"]
@@ -43,12 +46,22 @@ mesh = SubResource("QuadMesh_jhmdj")
 surface_material_override/0 = ExtResource("1_orm6j")
 
 [node name="Wall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.59835, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.59835, 0, 3.13652)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Wall"]
 shape = SubResource("BoxShape3D_1nkjw")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Wall"]
+mesh = SubResource("BoxMesh_ws6ps")
+surface_material_override/0 = ExtResource("1_orm6j")
+
+[node name="Wall2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.59835, 0, -11.1643)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wall2"]
+shape = SubResource("BoxShape3D_rabit")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Wall2"]
 mesh = SubResource("BoxMesh_ws6ps")
 surface_material_override/0 = ExtResource("1_orm6j")
 
