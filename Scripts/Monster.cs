@@ -57,6 +57,8 @@ public partial class Monster : CharacterBody3D
 	private float TargetDistanceThreshold { get; set; } = 0.2f;
 	[Export]
 	private float KillZoneRadius { get; set; } = 1.5f;
+	[Export]
+	private float TargetPlayerDistanceToEnemyWhenInKillState { get; set; } = 1.0f;
 
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
@@ -164,9 +166,13 @@ public partial class Monster : CharacterBody3D
 	{
 		if (Player != null)
 		{
-			Vector3 direction = (Player.GlobalPosition - GlobalPosition).Normalized();
+			Vector3 playerGlobalPosition = Player.GlobalPosition;
+			Vector3 direction = (playerGlobalPosition - GlobalPosition).Normalized();
 			float rotation = Mathf.Atan2(-direction.X, -direction.Z);
 			Rotation = new Vector3(0, rotation, 0);
+
+			Vector3 offset = direction * TargetPlayerDistanceToEnemyWhenInKillState;
+			GlobalPosition = playerGlobalPosition - offset;
 		}
 	}
 
@@ -174,7 +180,8 @@ public partial class Monster : CharacterBody3D
 	{
 		if (Player != null)
 		{
-			float distance = GlobalPosition.DistanceTo(Player.GlobalPosition);
+			Vector3 playerGlobalPosition = Player.GlobalPosition;
+			float distance = GlobalPosition.DistanceTo(playerGlobalPosition);
 			if (distance < KillZoneRadius)
 			{
 				OnPlayerKill();
@@ -322,6 +329,7 @@ public partial class Monster : CharacterBody3D
 		GD.Print("OnPlayerKill");
 		SetState(MonsterState.KILL);
 		ShaderControllerAutoload.EnableMonsterForceEdgeCheck();
+		Player.SetKillState(Eyes);
 	}
 
     private void OnAnimationFinished(StringName animName)

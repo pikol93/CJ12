@@ -21,10 +21,14 @@ public partial class Character : CharacterBody3D
 	private NodePath StepPlayerPath { get; set; }
 	[Export]
 	private float StepDistance { get; set; } = 2.0f;
+	[Export]
+	private float KillPitchRotation { get; set; } = 0.5f;
 
 	private Node3D Neck { get; set; }
 	private AudioStreamPlayer3D StepPlayer { get; set; }
 	private float Pitch { get; set; }
+
+	private Node3D MonsterEyes;
 
 	private bool isSneaking = false;
 	private bool isRunning = false;
@@ -39,6 +43,13 @@ public partial class Character : CharacterBody3D
 
     public override void _Process(double delta)
 	{
+		if (MonsterEyes != null)
+		{
+			LookAt(MonsterEyes.GlobalPosition, Vector3.Up);
+			Neck.Rotation = new Vector3(KillPitchRotation, 0.0f, 0.0f);
+			return;
+		}
+
 		isSneaking = Input.IsActionPressed("sneak");
 		isRunning = Input.IsActionPressed("run");
 		float movementSpeed = GetMovementSpeed();
@@ -64,6 +75,11 @@ public partial class Character : CharacterBody3D
 
 	public override void _Input(InputEvent inputEvent)
 	{
+		if (MonsterEyes != null)
+		{
+			return;
+		}
+
 		const float halfPi = Mathf.Pi / 2f;
 
 		if (inputEvent is InputEventMouseMotion mouseMotion)
@@ -74,6 +90,11 @@ public partial class Character : CharacterBody3D
 			RotateY(-mouseMotionVector.X * MouseSensitivity);
 			Neck.Rotation = new Vector3(Pitch, 0f, 0f);
 		}
+	}
+
+	public void SetKillState(Node3D monsterEyes)
+	{
+		MonsterEyes = monsterEyes;
 	}
 
 	public bool IsDead()
