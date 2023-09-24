@@ -56,7 +56,7 @@ public partial class Monster : CharacterBody3D
 	[Export]
 	private float TargetDistanceThreshold { get; set; } = 0.2f;
 	[Export]
-	private float KillZoneRadius { get; set; } = 0.5f;
+	private float KillZoneRadius { get; set; } = 1.5f;
 
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
