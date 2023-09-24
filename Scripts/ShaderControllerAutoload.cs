@@ -216,7 +216,6 @@ public partial class ShaderControllerAutoload : Node
     public readonly record struct PulseData
     {
         public Vector3 Position { get; init; }
-
         public float Timestamp { get; init; }
         public float Velocity { get; init; }
         public float MaxRange { get; init; }

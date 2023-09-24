@@ -2,9 +2,18 @@ using Godot;
 using Godot.Collections;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 public partial class Monster : CharacterBody3D
 {
+    public readonly record struct PulseData
+    {
+        public Vector3 Position { get; init; }
+        public float Timestamp { get; init; }
+        public float Velocity { get; init; }
+        public float MaxLifetime { get; init; }
+    }
+
 	private const string ANIMATION_NAME_CHASE = "Chase";
 	private const string ANIMATION_NAME_IDLE = "Idle";
 	private const string ANIMATION_NAME_WALK = "Walk";
@@ -12,6 +21,8 @@ public partial class Monster : CharacterBody3D
 	private const string GROUP_MONSTER_WAYPOINT = "monster_waypoint";
 
 	private static readonly Random RANDOM = new();
+
+	private readonly LinkedList<PulseData> pulseDataList = new();
 
 	[Export]
 	private NodePath NavigationAgentNodePath { get; set; }
@@ -73,6 +84,8 @@ public partial class Monster : CharacterBody3D
 	private Vector3 lastKnownPlayerPosition = Vector3.Zero;
 	private Vector3 walkTarget = Vector3.Zero;
 
+	private float timePassed = 0.0f;
+
 	public override void _Ready()
 	{
 		ShaderControllerAutoload.DisableMonsterForceEdgeCheck();
@@ -90,6 +103,7 @@ public partial class Monster : CharacterBody3D
 		ValidatePlayerInstance();
 
 		float floatDelta = (float)delta;
+		timePassed += floatDelta;
 		switch (state)
 		{
 			case MonsterState.IDLE:
@@ -113,6 +127,8 @@ public partial class Monster : CharacterBody3D
 				ForceRoar();
 			}
 		}
+
+		DetectPlayerWithPulses();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -209,6 +225,29 @@ public partial class Monster : CharacterBody3D
 		return distance;
 	}
 
+    private void DetectPlayerWithPulses()
+    {
+		var node = pulseDataList.First;
+		while (node != null)
+		{
+			var nextNode = node.Next;
+			float timeSincePulseDataCreation = timePassed - node.Value.Timestamp;
+			if (timeSincePulseDataCreation > node.Value.MaxLifetime) {
+				pulseDataList.Remove(node);
+			}
+			else {
+				float distanceToPlayer = node.Value.Position.DistanceTo(Player.GlobalPosition);
+				float distanceTravelled = timeSincePulseDataCreation * node.Value.Velocity;
+				if (distanceToPlayer < distanceTravelled) {
+					pulseDataList.Remove(node);
+					OnSonaredPlayer(Player.GlobalPosition);
+				}
+			}
+
+			node = nextNode;
+		}
+    }
+
 	private void ForceRoar()
 	{
 		ProcessRoar(999999.0f);
@@ -285,6 +324,16 @@ public partial class Monster : CharacterBody3D
 		}
 
 		float range = RoarPulseVelocity * RoarPulseLifetime;
+
+		var pulseData = new PulseData()
+		{
+			Position = position,
+			Velocity = velocity,
+			MaxLifetime = lifetime,
+			Timestamp = timePassed,	
+		};
+
+		pulseDataList.AddFirst(pulseData);
 		ShaderControllerAutoload.Pulse(position, velocity, range, lifetime, PulseType.ONLY_RING, ColorOverride.RED);
 	}
 
@@ -339,6 +388,13 @@ public partial class Monster : CharacterBody3D
 			// TODO: Change scene to indicate that the player lost
 		}
     }
+
+	private void OnSonaredPlayer(Vector3 playerPosition)
+	{
+		GD.Print($"Spotted player at: {playerPosition}");
+		lastKnownPlayerPosition = playerPosition;
+		SetState(MonsterState.CHASE);
+	}
 
     private static float GetRandomBetween(float min, float max)
 	{
