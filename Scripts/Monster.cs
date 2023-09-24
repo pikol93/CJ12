@@ -23,6 +23,10 @@ public partial class Monster : CharacterBody3D
 	[Export]
 	private float RunSpeed { get; set; } = 5.0f;
 	[Export]
+	private float MinIdleTime { get; set; } = 3.0f;
+	[Export]
+	private float MaxIdleTime { get; set; } = 7.0f;
+	[Export]
 	private float MinRoarTime { get; set; } = 20.0f;
 	[Export]
 	private float MaxRoarTime { get; set; } = 40.0f;
@@ -48,6 +52,8 @@ public partial class Monster : CharacterBody3D
 	private int SonarPulses { get; set; } = 1;
 	[Export]
 	private float RoarPulseDelay { get; set; } = 0.1f;
+	[Export]
+	private float TargetDistanceThreshold { get; set; } = 0.2f;
 
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
@@ -94,7 +100,7 @@ public partial class Monster : CharacterBody3D
 				ForceRoar();
 			}
 		}
-		GetNextWalkPoint();
+		GetNextWalkTarget();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -105,29 +111,61 @@ public partial class Monster : CharacterBody3D
 
 	private void ProcessStateIdle(float delta)
 	{
+		Velocity = Vector3.Zero;
 		ProcessSonar(delta, MinSonarPassiveTime, MaxSonarPassiveTime);
 		ProcessRoar((float)delta);
+
+		idleTimeLeft -= delta;
+		if (idleTimeLeft < 0)
+		{
+			idleTimeLeft = GetRandomBetween(MinIdleTime, MaxIdleTime);
+			walkTarget = GetNextWalkTarget();
+			SetState(MonsterState.WALK);
+		}
 	}
 
 	private void ProcessStateWalk(float delta)
 	{
 		ProcessSonar(delta, MinSonarPassiveTime, MaxSonarPassiveTime);
 		ProcessRoar((float)delta);
-		MoveTowards(walkTarget);
+		float distanceLeft = MoveTowards(walkTarget);
+
+		if (distanceLeft < TargetDistanceThreshold)
+		{
+			SetState(MonsterState.IDLE);
+		}
 	}
 
 	private void ProcessStateChase(float delta)
 	{
 		ProcessSonar(delta, MinSonarAggressiveTime, MaxSonarAggressiveTime);
-		MoveTowards(lastKnownPlayerPosition);
+		float distanceLeft = MoveTowards(lastKnownPlayerPosition);
+
+		if (distanceLeft < TargetDistanceThreshold)
+		{
+			SetState(MonsterState.IDLE);
+		}
 	}
 
-	private void MoveTowards(Vector3 position)
+	/// <summary>
+	/// Moves towards target.
+	/// </summary>
+	/// <param name="position">Position to walk to.</param>
+	/// <returns>Distance left to target in straight line.</returns>
+	private float MoveTowards(Vector3 position)
 	{
 		NavigationAgent.TargetPosition = position;
-		var direction = (NavigationAgent.GetNextPathPosition() - GlobalPosition).Normalized();
+		Vector3 diff = NavigationAgent.GetNextPathPosition() - GlobalPosition;
+		var distance = diff.Length();
+		var direction = diff / distance;
 		var movementSpeed = GetMovementSpeed();
 		Velocity = direction * movementSpeed;
+
+		float rotation = Mathf.Atan2(-direction.X, -direction.Z);
+		GD.Print($"rotation: {rotation}, direction: {direction}");
+		Rotation = new Vector3(0, rotation, 0);
+
+		return distance;
 	}
 
 	private void ForceRoar()
@@ -209,7 +247,7 @@ public partial class Monster : CharacterBody3D
 		ShaderControllerAutoload.Pulse(position, velocity, range, lifetime, PulseType.ONLY_RING, ColorOverride.RED);
 	}
 
-	private Vector3 GetNextWalkPoint()
+	private Vector3 GetNextWalkTarget()
 	{
 		// TODO: Decide randomly whether to wander around in place or choose another waypoint position.
 		// Also it may be good to consider how much time has been spent near the player to not overwhelm them.

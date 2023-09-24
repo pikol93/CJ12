@@ -16,11 +16,35 @@ EyesNodePath = NodePath("EyesPosition")
 [node name="monster" parent="." instance=ExtResource("2_q5ehf")]
 transform = Transform3D(-1.5, 0, -1.31134e-07, 0, 1.5, 0, 1.31134e-07, 0, -1.5, 0, 0, 0)
 
+[node name="Skeleton3D" parent="monster/Armature" index="0"]
+bones/1/position = Vector3(2.77556e-17, 0.00270818, 0.711533)
+bones/2/rotation = Quaternion(0.172134, 4.30589e-08, -7.52421e-09, 0.985074)
+bones/3/rotation = Quaternion(0.228313, 0, -5.06958e-17, 0.973588)
+bones/4/rotation = Quaternion(0.119226, -0.153376, -0.975345, 0.104707)
+bones/5/rotation = Quaternion(-0.000837043, -0.00113787, -0.00300523, 0.999994)
+bones/7/rotation = Quaternion(0.118312, 0.13412, 0.976955, 0.116505)
+bones/8/rotation = Quaternion(0.0250206, -0.00577156, 0.0913369, 0.995489)
+bones/10/rotation = Quaternion(0.000470187, 0.196866, 0.98043, 0.000300329)
+bones/11/rotation = Quaternion(-0.720794, 2.31505e-05, 0.000990763, 0.693149)
+bones/12/rotation = Quaternion(0.804646, 0.000128574, -0.000497407, 0.593755)
+bones/13/rotation = Quaternion(0.406992, 2.86749e-07, -1.27763e-07, 0.913432)
+bones/14/rotation = Quaternion(0.000216039, -0.426755, -0.904367, 0.000445874)
+bones/15/rotation = Quaternion(-0.548167, -0.000137626, -0.000834809, 0.836369)
+bones/16/rotation = Quaternion(0.535284, -2.01929e-05, 0.000362632, 0.844672)
+bones/17/rotation = Quaternion(0.335065, 2.95771e-07, -1.05182e-07, 0.942195)
+bones/18/position = Vector3(-0.0555882, -0.230643, 0.196562)
+bones/18/rotation = Quaternion(0, 0, 1, 0)
+bones/20/position = Vector3(0.0555882, 0.186606, 0.0587554)
+bones/20/rotation = Quaternion(0, 0, 1, 0)
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
 shape = SubResource("CylinderShape3D_torcf")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_height_offset = 0.5
 
 [node name="EyesPosition" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.93896, -0.462438)
+
+[editable path="monster"]
