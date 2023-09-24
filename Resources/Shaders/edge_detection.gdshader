@@ -61,7 +61,7 @@ void fragment() {
 	vec3 pixel_world_position = world.xyz / world.w;
 	
 #ifdef EDITOR
-	int visiblitiy = ALWAYS_VISIBLE;
+	int visiblitiy = VISIBLE;
 #else
 	int visibility = INVISIBLE;
 #endif
