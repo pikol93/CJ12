@@ -24,6 +24,10 @@ public partial class Character : CharacterBody3D
 		Vector3 movementDirection = Transform.Basis * new Vector3(input.X, 0, -input.Y).Normalized();
 		Velocity = movementDirection * MovementSpeed;
 		MoveAndSlide();
+
+		if (Input.IsActionJustPressed("create_pulse")) {
+			CreatePulse();
+		}
 	}
 
 	public override void _Input(InputEvent inputEvent)
@@ -39,4 +43,10 @@ public partial class Character : CharacterBody3D
 			Neck.Rotation = new Vector3(Pitch, 0f, 0f);
 		}
 	}
+
+    private void CreatePulse()
+    {
+		Vector3 position = Neck.GlobalPosition;
+		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f);
+    }
 }

@@ -12,6 +12,15 @@ uniform float neighbour_distance : hint_range(0.0, 10.0) = 0.5;
 uniform vec4 albedo : source_color;
 uniform vec4 edge_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 
+// Variables set by script
+uniform vec3[PULSE_MAX_COUNT] pulse_positions;
+uniform float[PULSE_MAX_COUNT] pulse_timestamps;
+uniform float[PULSE_MAX_COUNT] pulse_velocities;
+uniform float[PULSE_MAX_COUNT] pulse_max_ranges;
+uniform float[PULSE_MAX_COUNT] pulse_max_lifetimes;
+
+varying mat4 CAMERA;
+
 float manhattan_distance(vec3 color_a, vec3 color_b) {
 	vec3 difference = abs(color_a - color_b);
 	return difference.r + difference.g + difference.b;
@@ -28,15 +37,40 @@ vec2 pixel_to_screen_uv(vec2 viewport_size, vec2 pixel) {
 	return vec2(pixel.x / viewport_size.x, pixel.y / viewport_size.y);
 }
 
+void vertex() {
+	CAMERA = INV_VIEW_MATRIX;
+}
+
 void fragment() {
 	vec2 iuv = vec2(SCREEN_UV.x * VIEWPORT_SIZE.x, SCREEN_UV.y * VIEWPORT_SIZE.y);
 	
-	float depth_center = texture(depth_texture, SCREEN_UV).r;
-	float depth_center_linear = linear_depth(depth_center, SCREEN_UV, INV_PROJECTION_MATRIX);
-	if (depth_center_linear > 10.0) {
-		ALBEDO = vec3(0, 0, 0);
+	float depth = texture(depth_texture, SCREEN_UV).x;
+	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth);
+	vec4 view = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	view.xyz /= view.w;
+	float linear_depth_var = -view.z;
+	vec4 world = CAMERA * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	vec3 pixel_world_position = world.xyz / world.w;
+	
+	bool isVisible = false;
+	for (int i = 0; i < PULSE_MAX_COUNT; i++) {
+		float timestamp = pulse_timestamps[i];
+		if (timestamp < 0.01) {
+			break;
+		}
+		float pulse_lifetime = TIME - timestamp;
+		float velocity = pulse_velocities[i];
+		float max_range = pulse_max_ranges[i];
+		float range = min(max_range, velocity * pulse_lifetime);
+		vec3 pulsePosition = pulse_positions[i];
+		float distanceToPulse = distance(pulsePosition, pixel_world_position);
+		if (distanceToPulse < range) {
+			isVisible = true;
+			break;
+		}
 	}
-	else {
+	
+	if (isVisible) {
 		vec2 uv_left = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(-neighbour_distance, 0.0));
 		vec2 uv_right = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(neighbour_distance, 0.0));
 		vec2 uv_bottom = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(0.0, -neighbour_distance));
@@ -66,5 +100,8 @@ void fragment() {
 		else {
 			ALBEDO = albedo.rgb;
 		}
+	}
+	else {
+		ALBEDO = vec3(0, 0, 0);
 	}
 }
