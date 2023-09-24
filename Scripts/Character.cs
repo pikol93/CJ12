@@ -4,7 +4,7 @@ using Godot;
 public partial class Character : CharacterBody3D
 {
 	[Export]
-	private float MovementSpeed { get; set; } = 2.0f;
+	private float WalkSpeed { get; set; } = 2.0f;
 	[Export]
 	private float RunningSpeed { get; set; } = 5.0f;
 	[Export]
@@ -20,6 +20,7 @@ public partial class Character : CharacterBody3D
 	private AudioStreamPlayer3D StepPlayer { get ;set; }
 	private float Pitch { get; set;}
 
+	private bool isRunning = false;
 	private float stepLeft;
 
     public override void _Ready()
@@ -31,10 +32,13 @@ public partial class Character : CharacterBody3D
 
     public override void _Process(double delta)
 	{
+		isRunning = Input.IsActionPressed("run");
+		float movementSpeed = isRunning ? RunningSpeed : WalkSpeed;
+
 		GlobalData.LastKnownPlayerPosition = GlobalPosition;
 		Vector2 input = PlayerInputAutoload.MoveVector;
 		Vector3 movementDirection = Transform.Basis * new Vector3(input.X, 0, -input.Y).Normalized();
-		Velocity = movementDirection * MovementSpeed;
+		Velocity = movementDirection * movementSpeed;
 		MoveAndSlide();
 
 		float distanceTravelled = Velocity.Length() * (float)delta;
@@ -72,7 +76,7 @@ public partial class Character : CharacterBody3D
 
 	private void OnStep()
 	{
-		ShaderControllerAutoload.Pulse(GlobalPosition, 4.0f, 3.0f, 1.0f);
+		ShaderControllerAutoload.Pulse(GlobalPosition, 8.0f, 4.0f, 0.8f);
 		StepPlayer.Play();
 	}
 }

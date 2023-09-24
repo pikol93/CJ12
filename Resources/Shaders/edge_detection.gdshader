@@ -82,8 +82,8 @@ void fragment() {
 			}
 			else {
 				visibility = VISIBLE;
+				break;
 			}
-			break;
 		}
 	}
 	
