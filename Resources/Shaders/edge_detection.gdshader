@@ -29,33 +29,40 @@ vec2 pixel_to_screen_uv(vec2 viewport_size, vec2 pixel) {
 void fragment() {
 	vec2 iuv = vec2(SCREEN_UV.x * VIEWPORT_SIZE.x, SCREEN_UV.y * VIEWPORT_SIZE.y);
 	
-	vec2 uv_left = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(-neighbour_distance, 0.0));
-	vec2 uv_right = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(neighbour_distance, 0.0));
-	vec2 uv_bottom = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(0.0, -neighbour_distance));
-	vec2 uv_top = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(0.0, neighbour_distance));
-	
-	vec3 normal_left = texture(screen_texture, uv_left).rgb;
-	vec3 normal_right = texture(screen_texture, uv_right).rgb;
-	vec3 normal_bottom = texture(screen_texture, uv_bottom).rgb;
-	vec3 normal_top = texture(screen_texture, uv_top).rgb;
-	
-	float depth_left = texture(depth_texture, uv_left).r;
-	float depth_right = texture(depth_texture, uv_right).r;
-	float depth_bottom = texture(depth_texture, uv_bottom).r;
-	float depth_top = texture(depth_texture, uv_top).r;
-	
-	float linear_depth_left = linear_depth(depth_left, SCREEN_UV, INV_PROJECTION_MATRIX);
-	float linear_depth_right = linear_depth(depth_right, SCREEN_UV, INV_PROJECTION_MATRIX);
-	float linear_depth_bottom = linear_depth(depth_bottom, SCREEN_UV, INV_PROJECTION_MATRIX);
-	float linear_depth_top = linear_depth(depth_top, SCREEN_UV, INV_PROJECTION_MATRIX);
-	
-	if (manhattan_distance(normal_left, normal_right) > normal_edge_detection_threshold 
-	 || manhattan_distance(normal_top, normal_bottom) > normal_edge_detection_threshold
-	 || abs(linear_depth_left - linear_depth_right) > depth_edge_detection_threshold
-	 || abs(linear_depth_bottom - linear_depth_top) > depth_edge_detection_threshold) {
-		ALBEDO = edge_color.rgb;
+	float depth_center = texture(depth_texture, SCREEN_UV).r;
+	float depth_center_linear = linear_depth(depth_center, SCREEN_UV, INV_PROJECTION_MATRIX);
+	if (depth_center_linear > 10.0) {
+		ALBEDO = vec3(0, 0, 0);
 	}
 	else {
-		ALBEDO = albedo.rgb;
+		vec2 uv_left = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(-neighbour_distance, 0.0));
+		vec2 uv_right = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(neighbour_distance, 0.0));
+		vec2 uv_bottom = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(0.0, -neighbour_distance));
+		vec2 uv_top = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(0.0, neighbour_distance));
+		
+		vec3 normal_left = texture(screen_texture, uv_left).rgb;
+		vec3 normal_right = texture(screen_texture, uv_right).rgb;
+		vec3 normal_bottom = texture(screen_texture, uv_bottom).rgb;
+		vec3 normal_top = texture(screen_texture, uv_top).rgb;
+		
+		float depth_left = texture(depth_texture, uv_left).r;
+		float depth_right = texture(depth_texture, uv_right).r;
+		float depth_bottom = texture(depth_texture, uv_bottom).r;
+		float depth_top = texture(depth_texture, uv_top).r;
+		
+		float linear_depth_left = linear_depth(depth_left, SCREEN_UV, INV_PROJECTION_MATRIX);
+		float linear_depth_right = linear_depth(depth_right, SCREEN_UV, INV_PROJECTION_MATRIX);
+		float linear_depth_bottom = linear_depth(depth_bottom, SCREEN_UV, INV_PROJECTION_MATRIX);
+		float linear_depth_top = linear_depth(depth_top, SCREEN_UV, INV_PROJECTION_MATRIX);
+		
+		if (manhattan_distance(normal_left, normal_right) > normal_edge_detection_threshold 
+		 || manhattan_distance(normal_top, normal_bottom) > normal_edge_detection_threshold
+		 || abs(linear_depth_left - linear_depth_right) > depth_edge_detection_threshold
+		 || abs(linear_depth_bottom - linear_depth_top) > depth_edge_detection_threshold) {
+			ALBEDO = edge_color.rgb;
+		}
+		else {
+			ALBEDO = albedo.rgb;
+		}
 	}
 }
