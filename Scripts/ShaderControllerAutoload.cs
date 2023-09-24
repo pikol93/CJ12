@@ -22,7 +22,7 @@ public partial class ShaderControllerAutoload : Node
 
     private List<ShaderMaterial> SonarMaterials { get; } = new();
 
-    private ShaderMaterial MonsterShaderMaterial { get; set; };
+    private ShaderMaterial MonsterShaderMaterial { get; set; }
 
     private readonly LinkedList<PulseData> pulseDataList = new();
     private readonly Vector3[] positionArray = new Vector3[SONAR_MAX_DATA_COUNT];
