@@ -23,8 +23,8 @@ public partial class Character : CharacterBody3D
 	private float StepDistance { get; set; } = 2.0f;
 
 	private Node3D Neck { get; set; }
-	private AudioStreamPlayer3D StepPlayer { get ;set; }
-	private float Pitch { get; set;}
+	private AudioStreamPlayer3D StepPlayer { get; set; }
+	private float Pitch { get; set; }
 
 	private bool isSneaking = false;
 	private bool isRunning = false;
@@ -119,13 +119,13 @@ public partial class Character : CharacterBody3D
     private void CreatePulse()
     {
 		var position = Neck.GlobalPosition;
-		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f, PulseType.ONLY_RING);
+		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f);
     }
 
 	private void OnStep()
 	{
 		var stepPulseData = GetStepPulseData();
-		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime, PulseType.NORMAL, ColorOverride.RED);
+		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime);
 		StepPlayer.Play();
 	}
 

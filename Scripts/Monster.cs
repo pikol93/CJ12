@@ -4,6 +4,8 @@ using System;
 
 public partial class Monster : CharacterBody3D
 {
+	private static readonly Random RANDOM = new();
+
 	[Export]
 	private NodePath NavigationAgentNodePath { get; set; }
 	[Export]
@@ -16,9 +18,18 @@ public partial class Monster : CharacterBody3D
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
 	private Character Player { get; set; }
+	[Export]
+	private float MinRoarTime { get; set; } = 20.0f;
+	[Export]
+	private float MaxRoarTime { get; set; } = 40.0f;
+	[Export]
+	private float RoarPulseVelocity { get; set; } = 10.0f;
+	[Export]
+	private float RoarPulseLifetime { get; set; } = 10.0f;
 
 	private MonsterState state = MonsterState.IDLE;
-	private float playerNotice = 0.0f;
+
+	private float timeLeftToRoar = 50.0f;
 
 
 	public override void _Ready()
@@ -27,7 +38,20 @@ public partial class Monster : CharacterBody3D
 		Eyes = this.GetNodeOrThrow<Node3D>(EyesNodePath);
 	}
 
-	public override void _PhysicsProcess(double delta)
+    public override void _Process(double delta)
+    {
+		ProcessRoar((float)delta);
+
+		if (OS.IsDebugBuild())
+		{
+			if (Input.IsActionJustPressed("force_monster_roar"))
+			{
+				ForceRoar();
+			}
+		}
+    }
+
+    public override void _PhysicsProcess(double delta)
 	{
 		ValidatePlayerInstance();
 		NavigationAgent.TargetPosition = GlobalData.LastKnownPlayerPosition;
@@ -36,7 +60,22 @@ public partial class Monster : CharacterBody3D
 		var movementSpeed = GetMovementSpeed();
 
 		Velocity = direction * movementSpeed;
-		MoveAndSlide();
+		// MoveAndSlide();
+	}
+
+	private void ForceRoar()
+	{
+		ProcessRoar(999999.0f);
+	}
+
+	private void ProcessRoar(float delta)
+	{
+		timeLeftToRoar -= delta;
+		if (timeLeftToRoar < 0)
+		{
+			timeLeftToRoar = GetRandomRoarTime();
+			OnRoar();
+		}
 	}
 
 	private void SetState(MonsterState state)
@@ -74,5 +113,18 @@ public partial class Monster : CharacterBody3D
 		}
 
 		return WalkSpeed;
+	}
+
+	private float GetRandomRoarTime()
+	{
+		float diff = MaxRoarTime - MinRoarTime;
+		return MinRoarTime + (diff * (float)RANDOM.NextDouble());
+	}
+	
+	private void OnRoar()
+	{
+		Vector3 roarPosition = Eyes.GlobalPosition;
+		float roarPulseRange = RoarPulseVelocity * RoarPulseLifetime;
+		ShaderControllerAutoload.Pulse(roarPosition, RoarPulseVelocity, roarPulseRange, RoarPulseLifetime, PulseType.ONLY_RING, ColorOverride.RED);
 	}
 }

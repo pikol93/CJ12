@@ -82,7 +82,7 @@ public partial class ShaderControllerAutoload : Node
         }
     }
 
-    public static void Pulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType, ColorOverride colorOverride = ColorOverride.NONE)
+    public static void Pulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType = PulseType.NORMAL, ColorOverride colorOverride = ColorOverride.NONE)
     {
         Instance.InternalPulse(from, velocity, maxRange, maxLifetime, pulseType, colorOverride);
     }
