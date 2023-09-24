@@ -33,6 +33,8 @@ public partial class Monster : CharacterBody3D
 	[Export]
 	private NodePath BreathingAudioPlayerNodePath { get; set; }
 	[Export]
+	private NodePath ScreechAudioPlayerNodePath { get; set; }
+	[Export]
 	private float WalkSpeed { get; set; } = 2.5f;
 	[Export]
 	private float RunSpeed { get; set; } = 5.0f;
@@ -79,6 +81,7 @@ public partial class Monster : CharacterBody3D
 	private Node3D Eyes { get; set; }
 	private AnimationPlayer AnimationPlayer { get; set; }
 	private AudioStreamPlayer3D BreathingAudioPlayer { get; set; }
+	private AudioStreamPlayer3D ScreechAudioPlayer { get; set; }
 	private Character Player { get; set; }
 
 	private MonsterState state = MonsterState.IDLE;
@@ -99,6 +102,7 @@ public partial class Monster : CharacterBody3D
 		Eyes = this.GetNodeOrThrow<Node3D>(EyesNodePath);
 		AnimationPlayer = this.GetNodeOrThrow<AnimationPlayer>(AnimationPlayerNodePath);
 		BreathingAudioPlayer = this.GetNodeOrThrow<AudioStreamPlayer3D>(BreathingAudioPlayerNodePath);
+		ScreechAudioPlayer = this.GetNodeOrThrow<AudioStreamPlayer3D>(ScreechAudioPlayerNodePath);
 
 		SetState(state);
 
@@ -299,6 +303,7 @@ public partial class Monster : CharacterBody3D
 			timeLeftToRoar = GetRandomBetween(MinRoarTime, MaxRoarTime);
 			Vector3 roarPosition = Eyes.GlobalPosition;
 			QueuePulses(RoarPulses, roarPosition, RoarPulseVelocity, RoarPulseLifetime);
+			ScreechAudioPlayer.Play();
 		}
 	}
 

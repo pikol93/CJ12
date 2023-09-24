@@ -3,9 +3,9 @@ using Godot;
 
 public partial class Character : CharacterBody3D
 {
-	private static readonly StepPulseData STEP_PULSE_DATA_SNEAK = new(6.0f, 2.5f, 0.7f);
+	private static readonly StepPulseData STEP_PULSE_DATA_SNEAK = new(6.0f, 2.0f, 0.7f);
 	private static readonly StepPulseData STEP_PULSE_DATA_WALK = new(8.0f, 3.0f, 0.8f);
-	private static readonly StepPulseData STEP_PULSE_DATA_RUN = new(8.0f, 5.5f, 1.3f);
+	private static readonly StepPulseData STEP_PULSE_DATA_RUN = new(10.0f, 7.5f, 1.3f);
 
 	[Export]
 	private float SneakSpeed { get; set; } = 0.8f; 
