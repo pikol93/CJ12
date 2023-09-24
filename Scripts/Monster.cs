@@ -100,7 +100,6 @@ public partial class Monster : CharacterBody3D
 				ForceRoar();
 			}
 		}
-		GetNextWalkTarget();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -162,7 +161,6 @@ public partial class Monster : CharacterBody3D
 		Velocity = direction * movementSpeed;
 
 		float rotation = Mathf.Atan2(-direction.X, -direction.Z);
-		GD.Print($"rotation: {rotation}, direction: {direction}");
 		Rotation = new Vector3(0, rotation, 0);
 
 		return distance;
@@ -268,7 +266,6 @@ public partial class Monster : CharacterBody3D
 		}
 
 		waypoints.Sort((a, b) => a.DistanceSquaredTo(GlobalPosition).CompareTo(b.DistanceSquaredTo(GlobalPosition)));
-		GD.Print($"Waypotins: {String.Join(", ", waypoints)}");
 
 		return waypoints[1];
 	}
