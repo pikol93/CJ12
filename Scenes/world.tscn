@@ -91,4 +91,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.00401, 0, -1.67267)
 
 [node name="Monster" parent="." instance=ExtResource("7_gthc5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2759, 0, -0.980361)
-visible = false

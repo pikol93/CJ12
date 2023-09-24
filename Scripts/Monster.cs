@@ -26,6 +26,10 @@ public partial class Monster : CharacterBody3D
 	private float RoarPulseVelocity { get; set; } = 10.0f;
 	[Export]
 	private float RoarPulseLifetime { get; set; } = 10.0f;
+	[Export]
+	private int RoarPulses { get; set; } = 3;
+	[Export]
+	private float RoarPulseDelay { get; set; } = 0.1f;
 
 	private MonsterState state = MonsterState.IDLE;
 
@@ -120,11 +124,27 @@ public partial class Monster : CharacterBody3D
 		float diff = MaxRoarTime - MinRoarTime;
 		return MinRoarTime + (diff * (float)RANDOM.NextDouble());
 	}
-	
-	private void OnRoar()
+
+	private void ProduceRoarPulse()
 	{
+		if (!IsInsideTree())
+		{
+			return;
+		}
+
 		Vector3 roarPosition = Eyes.GlobalPosition;
 		float roarPulseRange = RoarPulseVelocity * RoarPulseLifetime;
 		ShaderControllerAutoload.Pulse(roarPosition, RoarPulseVelocity, roarPulseRange, RoarPulseLifetime, PulseType.ONLY_RING, ColorOverride.RED);
+	}
+	
+	private void OnRoar()
+	{
+		ProduceRoarPulse();
+		for (int i = 1; i < RoarPulses; i++)
+		{
+			float delay = i * RoarPulseDelay;
+			var timer = GetTree().CreateTimer(delay);
+			timer.Timeout += ProduceRoarPulse;
+		}
 	}
 }
