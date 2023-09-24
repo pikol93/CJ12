@@ -4,18 +4,27 @@ using Godot;
 public partial class ShaderControllerAutoload : Node
 {
     private const int SONAR_MAX_DATA_COUNT = 16;
-    private const float PULSE_LIFETIME = 1.0f;
-    private const string SONAR_PATH = "res://Resources/Materials/sonar.tres";
-    private const string SONAR_PARAM_POSITIONS = "sonar_positions";
-    private const string SONAR_PARAM_TIMESTAMPS = "sonar_timestamps";
+    private const string PULSE_PARAM_POSITIONS = "pulse_positions";
+    private const string PULSE_PARAM_TIMESTAMPS = "pulse_timestamps";
+    private const string PULSE_PARAM_VELOCITY = "pulse_velocities";
+    private const string PULSE_PARAM_MAX_RANGE = "pulse_max_ranges";
+    private const string PULSE_PARAM_MAX_LIFETIME = "pulse_max_lifetimes";
 
     private static ShaderControllerAutoload Instance { get; set; }
+
+    private List<string> SonarPaths { get; } = new() {
+        "res://Resources/Materials/monster_edge_detection.tres",
+        "res://Resources/Materials/environment_edge_detection.tres",
+    };
+
+    private List<ShaderMaterial> SonarMaterials { get; } = new();
 
     private readonly LinkedList<PulseData> pulseDataList = new();
     private readonly Vector3[] positionArray = new Vector3[SONAR_MAX_DATA_COUNT];
     private readonly float[] timestampArray = new float[SONAR_MAX_DATA_COUNT];
-
-    private ShaderMaterial SonarMaterial { get; set; }
+    private readonly float[] velocityArray = new float[SONAR_MAX_DATA_COUNT];
+    private readonly float[] maxRangeArray = new float[SONAR_MAX_DATA_COUNT];
+    private readonly float[] maxLifetimeArray = new float[SONAR_MAX_DATA_COUNT];
 
     private float timeCounterSeconds;
     private bool isSonarUpdateQueued;
@@ -23,7 +32,10 @@ public partial class ShaderControllerAutoload : Node
     public override void _Ready()
     {
         Instance = this;
-        SonarMaterial = GD.Load<ShaderMaterial>(SONAR_PATH);
+        foreach (var path in SonarPaths)
+        {
+            SonarMaterials.Add(ResourceLoader.Load<ShaderMaterial>(path));
+        }
 
         var clearOutdatedPulseDataTimer = new Timer
         {
@@ -47,9 +59,9 @@ public partial class ShaderControllerAutoload : Node
         }
     }
 
-    public static void Pulse(Vector3 from)
+    public static void Pulse(Vector3 from, float velocity, float maxRange, float maxLifetime)
     {
-        Instance.InternalPulse(from);
+        Instance.InternalPulse(from, velocity, maxRange, maxLifetime);
     }
 
     public static void EraseSonarPulseData()
@@ -57,12 +69,15 @@ public partial class ShaderControllerAutoload : Node
         Instance.InternalEraseSonarPulseData();
     }
 
-    private void InternalPulse(Vector3 from)
+    private void InternalPulse(Vector3 from, float velocity, float maxRange, float maxLifetime)
     {
         var pulseData = new PulseData()
         {
             Position = from,
             Timestamp = Time.GetTicksMsec() / 1000.0f,
+            Velocity = velocity,
+            MaxRange = maxRange,
+            MaxLifetime = maxLifetime,
         };
 
         pulseDataList.AddFirst(pulseData);
@@ -75,7 +90,7 @@ public partial class ShaderControllerAutoload : Node
         while (node != null)
         {
             var nextNode = node.Next;
-            if (IsOutdated(node.Value.Timestamp))
+            if (IsOutdated(node.Value.Timestamp, node.Value.MaxLifetime))
             {
                 GD.Print($"Removed node {node.Value}");
                 pulseDataList.Remove(node);
@@ -98,10 +113,10 @@ public partial class ShaderControllerAutoload : Node
         isSonarUpdateQueued = true;
     }
 
-    private bool IsOutdated(float timestamp)
+    private bool IsOutdated(float timestamp, float maxLifetime)
     {
         float timePassed = timeCounterSeconds - timestamp;
-        return timePassed > PULSE_LIFETIME;
+        return timePassed > maxLifetime;
     }
 
     /// <summary>
@@ -123,8 +138,14 @@ public partial class ShaderControllerAutoload : Node
             timestampArray[i] = pulseData.Timestamp;
         }
 
-        SonarMaterial.SetShaderParameter(SONAR_PARAM_POSITIONS, positionArray);
-        SonarMaterial.SetShaderParameter(SONAR_PARAM_TIMESTAMPS, timestampArray);
+        foreach (var sonarMaterial in SonarMaterials)
+        {
+            sonarMaterial.SetShaderParameter(PULSE_PARAM_POSITIONS, positionArray);
+            sonarMaterial.SetShaderParameter(PULSE_PARAM_TIMESTAMPS, timestampArray);
+            sonarMaterial.SetShaderParameter(PULSE_PARAM_VELOCITY, velocityArray);
+            sonarMaterial.SetShaderParameter(PULSE_PARAM_MAX_RANGE, maxRangeArray);
+            sonarMaterial.SetShaderParameter(PULSE_PARAM_MAX_LIFETIME, maxLifetimeArray);
+        }
     }
 
     private void OnClearOutdatedPulseDataTimerTimeout()
@@ -138,5 +159,8 @@ public partial class ShaderControllerAutoload : Node
         public Vector3 Position { get; init; }
 
         public float Timestamp { get; init; }
+        public float Velocity { get; init; }
+        public float MaxRange { get; init; }
+        public float MaxLifetime { get; init; }
     }
 }
