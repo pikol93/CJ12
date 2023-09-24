@@ -125,7 +125,7 @@ public partial class Character : CharacterBody3D
 	private void OnStep()
 	{
 		var stepPulseData = GetStepPulseData();
-		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime, PulseType.NORMAL);
+		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime, PulseType.NORMAL, ColorOverride.RED);
 		StepPlayer.Play();
 	}
 

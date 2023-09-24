@@ -7,6 +7,13 @@ public enum PulseType
     ONLY_RING,
 }
 
+public enum ColorOverride
+{
+    NONE,
+    WHITE,
+    RED,
+}
+
 public partial class ShaderControllerAutoload : Node
 {
     private const int SONAR_MAX_DATA_COUNT = 256;
@@ -17,6 +24,7 @@ public partial class ShaderControllerAutoload : Node
     private const string PULSE_PARAM_MAX_RANGE = "pulse_max_ranges";
     private const string PULSE_PARAM_MAX_LIFETIME = "pulse_max_lifetimes";
     private const string PULSE_PARAM_TYPE = "pulse_types";
+    private const string PULSE_PARAM_COLOR_OVERRIDE = "pulse_color_overrides";
     private const string PATH_MONSTER_EDGE_DETECTION = "res://Resources/Materials/monster_edge_detection.tres";
     private const string PATH_ENVIRONMENT_EDGE_DETECTION = "res://Resources/Materials/environment_edge_detection.tres";
 
@@ -38,6 +46,7 @@ public partial class ShaderControllerAutoload : Node
     private readonly float[] maxRangeArray = new float[SONAR_MAX_DATA_COUNT];
     private readonly float[] maxLifetimeArray = new float[SONAR_MAX_DATA_COUNT];
     private readonly int[] type = new int[SONAR_MAX_DATA_COUNT];
+    private readonly Vector3[] colorOverrides = new Vector3[SONAR_MAX_DATA_COUNT];
 
     private float timeCounterSeconds;
     private bool isSonarUpdateQueued;
@@ -73,9 +82,9 @@ public partial class ShaderControllerAutoload : Node
         }
     }
 
-    public static void Pulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType)
+    public static void Pulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType, ColorOverride colorOverride = ColorOverride.NONE)
     {
-        Instance.InternalPulse(from, velocity, maxRange, maxLifetime, pulseType);
+        Instance.InternalPulse(from, velocity, maxRange, maxLifetime, pulseType, colorOverride);
     }
 
     public static void EraseSonarPulseData()
@@ -93,7 +102,7 @@ public partial class ShaderControllerAutoload : Node
         Instance.MonsterShaderMaterial.SetShaderParameter(PARAM_FORCE_EDGE_CHECK, false);
     }
 
-    private void InternalPulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType)
+    private void InternalPulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType = PulseType.NORMAL, ColorOverride colorOverride = ColorOverride.NONE)
     {
         var pulseData = new PulseData()
         {
@@ -103,6 +112,7 @@ public partial class ShaderControllerAutoload : Node
             MaxRange = maxRange,
             MaxLifetime = maxLifetime,
             Type = PulseTypeToInteger(pulseType),
+            ColorOverride = ColorOverrideToVector3(colorOverride),
         };
 
         GD.Print($"{pulseData}");
@@ -166,6 +176,7 @@ public partial class ShaderControllerAutoload : Node
             maxRangeArray[i] = pulseData.MaxRange;
             maxLifetimeArray[i] = pulseData.MaxLifetime;
             type[i] = pulseData.Type;
+            colorOverrides[i] = pulseData.ColorOverride;
         }
 
         foreach (var sonarMaterial in SonarMaterials)
@@ -176,6 +187,7 @@ public partial class ShaderControllerAutoload : Node
             sonarMaterial.SetShaderParameter(PULSE_PARAM_MAX_RANGE, maxRangeArray);
             sonarMaterial.SetShaderParameter(PULSE_PARAM_MAX_LIFETIME, maxLifetimeArray);
             sonarMaterial.SetShaderParameter(PULSE_PARAM_TYPE, type);
+            sonarMaterial.SetShaderParameter(PULSE_PARAM_COLOR_OVERRIDE, colorOverrides);
         }
     }
 
@@ -193,6 +205,16 @@ public partial class ShaderControllerAutoload : Node
         };
     }
 
+    private static Vector3 ColorOverrideToVector3(ColorOverride colorOverride)
+    {
+        return colorOverride switch
+        {
+            ColorOverride.WHITE => Vector3.One,
+            ColorOverride.RED => new Vector3(1.0f, 0.0f, 0.0f),
+            _ => Vector3.Zero,
+        };
+    }
+
     public readonly record struct PulseData
     {
         public Vector3 Position { get; init; }
@@ -202,5 +224,6 @@ public partial class ShaderControllerAutoload : Node
         public float MaxRange { get; init; }
         public float MaxLifetime { get; init; }
         public int Type { get; init; }
+        public Vector3 ColorOverride { get; init; }
     }
 }

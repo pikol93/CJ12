@@ -30,6 +30,7 @@ uniform float[PULSE_MAX_COUNT] pulse_velocities;
 uniform float[PULSE_MAX_COUNT] pulse_max_ranges;
 uniform float[PULSE_MAX_COUNT] pulse_max_lifetimes;
 uniform int[PULSE_MAX_COUNT] pulse_types;
+uniform vec3[PULSE_MAX_COUNT] pulse_color_overrides;
 
 varying mat4 CAMERA;
 
@@ -63,6 +64,7 @@ void fragment() {
 	float linear_depth_var = -view.z;
 	vec4 world = CAMERA * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	vec3 pixel_world_position = world.xyz / world.w;
+	vec3 target_color = vec3(0, 0, 0);
 	
 #ifdef EDITOR
 	int visibility = VISIBLE;
@@ -86,6 +88,11 @@ void fragment() {
 		float distanceToPulse = distance(pulsePosition, pixel_world_position);
 		int pulse_type = pulse_types[i];
 		if (distanceToPulse < range) {
+			vec3 pulse_color_override = pulse_color_overrides[i];
+			if (pulse_color_override.r > 0.1 && target_color.r <= 0.1) {
+				target_color = pulse_color_override;
+			}
+			
 			if (distanceToPulse < range - pulse_width) {
 				if (pulse_type != RING_ONLY) {
 					visibility = EDGE_CHECK;
@@ -97,6 +104,10 @@ void fragment() {
 		}
 	}
 	
+	if (target_color.r <= 0.1) {
+		target_color = edge_color.xyz;
+	}
+	
 	if (force_edge_check && visibility == INVISIBLE) {
 		visibility = EDGE_CHECK;
 	}
@@ -105,7 +116,7 @@ void fragment() {
 		ALBEDO = vec3(0, 0, 0);
 	}
 	else if (visibility == VISIBLE) {
-		ALBEDO = edge_color.rgb;	
+		ALBEDO = target_color;	
 	}
 	else {
 		vec2 uv_left = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(-neighbour_distance, 0.0));
@@ -132,7 +143,7 @@ void fragment() {
 		 || manhattan_distance(normal_top, normal_bottom) > normal_edge_detection_threshold
 		 || abs(linear_depth_left - linear_depth_right) > depth_edge_detection_threshold
 		 || abs(linear_depth_bottom - linear_depth_top) > depth_edge_detection_threshold) {
-			ALBEDO = edge_color.rgb;
+			ALBEDO = target_color;
 		}
 		else {
 			ALBEDO = albedo.rgb;
