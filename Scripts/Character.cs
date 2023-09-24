@@ -20,6 +20,7 @@ public partial class Character : CharacterBody3D
 
     public override void _Process(double delta)
 	{
+		GlobalData.LastKnownPlayerPosition = GlobalPosition;
 		Vector2 input = PlayerInputAutoload.MoveVector;
 		Vector3 movementDirection = Transform.Basis * new Vector3(input.X, 0, -input.Y).Normalized();
 		Velocity = movementDirection * MovementSpeed;

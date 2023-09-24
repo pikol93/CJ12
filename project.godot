@@ -21,6 +21,7 @@ config/icon="res://icon.svg"
 PlayerInputAutoload="*res://Scripts/PlayerInputAutoload.cs"
 ShaderControllerAutoload="*res://Scripts/ShaderControllerAutoload.cs"
 GameManager="*res://Scripts/GameManager.cs"
+GlobalData="*res://Scripts/GlobalData.cs"
 
 [display]
 
