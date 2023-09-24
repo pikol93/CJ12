@@ -4,10 +4,14 @@ shader_type spatial;
 render_mode blend_mix, depth_prepass_alpha, cull_disabled, diffuse_lambert, specular_disabled;
 
 const int PULSE_MAX_COUNT = 32;
+const int VISIBLE = 0;
+const int INVISIBLE = 1;
+const int EDGE_CHECK = 2;
 
 uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap;
 uniform sampler2D depth_texture : hint_depth_texture, filter_linear_mipmap; 
 
+uniform float pulse_width : hint_range(0.0, 0.1) = 0.05;
 uniform float normal_edge_detection_threshold : hint_range(-0.1, 0.1) = 0.001;
 uniform float depth_edge_detection_threshold : hint_range(0.0, 10.0) = 2.0;
 uniform float neighbour_distance : hint_range(0.0, 10.0) = 0.5;
@@ -56,9 +60,9 @@ void fragment() {
 	vec3 pixel_world_position = world.xyz / world.w;
 	
 #ifdef EDITOR
-	bool isVisible = true;
+	int visiblitiy = ALWAYS_VISIBLE;
 #else
-	bool isVisible = always_visible;
+	int visibility = INVISIBLE;
 #endif
 	for (int i = 0; i < PULSE_MAX_COUNT; i++) {
 		float timestamp = pulse_timestamps[i];
@@ -72,12 +76,23 @@ void fragment() {
 		vec3 pulsePosition = pulse_positions[i];
 		float distanceToPulse = distance(pulsePosition, pixel_world_position);
 		if (distanceToPulse < range) {
-			isVisible = true;
+			if (distanceToPulse < range - pulse_width) {
+				visibility = EDGE_CHECK;
+			}
+			else {
+				visibility = VISIBLE;
+			}
 			break;
 		}
 	}
 	
-	if (isVisible) {
+	if (visibility == INVISIBLE) {
+		ALBEDO = vec3(0, 0, 0);
+	}
+	else if (visibility == VISIBLE) {
+		ALBEDO = edge_color.rgb;	
+	}
+	else {
 		vec2 uv_left = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(-neighbour_distance, 0.0));
 		vec2 uv_right = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(neighbour_distance, 0.0));
 		vec2 uv_bottom = pixel_to_screen_uv(VIEWPORT_SIZE, iuv + vec2(0.0, -neighbour_distance));
@@ -107,8 +122,5 @@ void fragment() {
 		else {
 			ALBEDO = albedo.rgb;
 		}
-	}
-	else {
-		ALBEDO = vec3(0, 0, 0);
 	}
 }
