@@ -1,23 +1,23 @@
 [gd_scene load_steps=8 format=3 uid="uid://da20672b4qq04"]
 
 [ext_resource type="Script" path="res://Scripts/Character.cs" id="1_3fb61"]
-[ext_resource type="AudioStream" uid="uid://dm6fr124nh4al" path="res://Resources/Sounds/step2.ogg" id="2_bl4je"]
-[ext_resource type="AudioStream" uid="uid://cafjpreq2ub7a" path="res://Resources/Sounds/step4.ogg" id="4_feyrx"]
-[ext_resource type="AudioStream" uid="uid://cr6aovvwp8cld" path="res://Resources/Sounds/step6.ogg" id="6_7w0ah"]
-[ext_resource type="AudioStream" uid="uid://5he8sc4n627c" path="res://Resources/Sounds/step1.ogg" id="7_f64vm"]
+[ext_resource type="AudioStream" uid="uid://dm6fr124nh4al" path="res://Resources/Sounds/Steps/step2.ogg" id="2_31xtv"]
+[ext_resource type="AudioStream" uid="uid://cafjpreq2ub7a" path="res://Resources/Sounds/Steps/step4.ogg" id="3_hldb0"]
+[ext_resource type="AudioStream" uid="uid://cr6aovvwp8cld" path="res://Resources/Sounds/Steps/step6.ogg" id="4_jr8ae"]
+[ext_resource type="AudioStream" uid="uid://5he8sc4n627c" path="res://Resources/Sounds/Steps/step1.ogg" id="5_qnuyw"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_beuox"]
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_02i5a"]
 streams_count = 4
 random_pitch = 1.2
-stream_0/stream = ExtResource("2_bl4je")
+stream_0/stream = ExtResource("2_31xtv")
 stream_0/weight = 1.0
-stream_1/stream = ExtResource("4_feyrx")
+stream_1/stream = ExtResource("3_hldb0")
 stream_1/weight = 1.0
-stream_2/stream = ExtResource("6_7w0ah")
+stream_2/stream = ExtResource("4_jr8ae")
 stream_2/weight = 1.0
-stream_3/stream = ExtResource("7_f64vm")
+stream_3/stream = ExtResource("5_qnuyw")
 stream_3/weight = 1.0
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
