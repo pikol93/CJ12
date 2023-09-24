@@ -91,3 +91,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.00401, 0, -1.67267)
 
 [node name="Monster" parent="." instance=ExtResource("7_gthc5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2759, 0, -0.980361)
+
+[node name="MonsterWaypoint" type="Node3D" parent="." groups=["monster_waypoint"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -168.669, 0, -12.5515)
+
+[node name="MonsterWaypoint2" type="Node3D" parent="." groups=["monster_waypoint"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.2211, 0, 11.4947)
+
+[node name="MonsterWaypoint3" type="Node3D" parent="." groups=["monster_waypoint"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.6408, 0, 11.4947)
+
+[node name="MonsterWaypoint4" type="Node3D" parent="." groups=["monster_waypoint"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.6408, 0, -13.7443)

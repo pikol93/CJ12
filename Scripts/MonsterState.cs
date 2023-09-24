@@ -1,6 +1,6 @@
 public enum MonsterState
 {
     IDLE,
-    PATROL,
+    WALK,
     CHASE,
 }

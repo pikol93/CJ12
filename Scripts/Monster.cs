@@ -1,12 +1,15 @@
 using Godot;
 using Godot.Collections;
 using System;
+using System.Collections.Generic;
 
 public partial class Monster : CharacterBody3D
 {
 	private const string ANIMATION_NAME_CHASE = "Chase";
 	private const string ANIMATION_NAME_IDLE = "Idle";
 	private const string ANIMATION_NAME_WALK = "Walk";
+	private const string GROUP_MONSTER_WAYPOINT = "monster_waypoint";
+
 	private static readonly Random RANDOM = new();
 
 	[Export]
@@ -24,11 +27,25 @@ public partial class Monster : CharacterBody3D
 	[Export]
 	private float MaxRoarTime { get; set; } = 40.0f;
 	[Export]
+	private float MinSonarPassiveTime { get; set; } = 2.0f;
+	[Export]
+	private float MaxSonarPassiveTime { get; set; } = 2.2f;
+	[Export]
+	private float MinSonarAggressiveTime { get; set; } = 1.0f;
+	[Export]
+	private float MaxSonarAggressiveTime { get; set; } = 1.2f;
+	[Export]
 	private float RoarPulseVelocity { get; set; } = 10.0f;
 	[Export]
 	private float RoarPulseLifetime { get; set; } = 10.0f;
 	[Export]
 	private int RoarPulses { get; set; } = 3;
+	[Export]
+	private float SonarPulseVelocity { get; set; } = 3.0f;
+	[Export]
+	private float SonarPulseLifetime { get; set; } = 1.0f;
+	[Export]
+	private int SonarPulses { get; set; } = 1;
 	[Export]
 	private float RoarPulseDelay { get; set; } = 0.1f;
 
@@ -40,7 +57,10 @@ public partial class Monster : CharacterBody3D
 	private MonsterState state = MonsterState.IDLE;
 
 	private float timeLeftToRoar = 50.0f;
-
+	private float timeLeftToSonar = 0.0f;
+	private float idleTimeLeft = 0.0f;
+	private Vector3 lastKnownPlayerPosition = Vector3.Zero;
+	private Vector3 walkTarget = Vector3.Zero;
 
 	public override void _Ready()
 	{
@@ -48,12 +68,24 @@ public partial class Monster : CharacterBody3D
 		Eyes = this.GetNodeOrThrow<Node3D>(EyesNodePath);
 		AnimationPlayer = this.GetNodeOrThrow<AnimationPlayer>(AnimationPlayerNodePath);
 
-		SetState(MonsterState.CHASE);
+		SetState(state);
 	}
 
     public override void _Process(double delta)
     {
-		ProcessRoar((float)delta);
+		float floatDelta = (float)delta;
+		switch (state)
+		{
+			case MonsterState.IDLE:
+				ProcessStateIdle(floatDelta);
+				break;
+			case MonsterState.WALK:
+				ProcessStateWalk(floatDelta);
+				break;
+			case MonsterState.CHASE:
+				ProcessStateChase(floatDelta);
+				break;
+		}
 
 		if (OS.IsDebugBuild())
 		{
@@ -62,18 +94,40 @@ public partial class Monster : CharacterBody3D
 				ForceRoar();
 			}
 		}
+		GetNextWalkPoint();
     }
 
     public override void _PhysicsProcess(double delta)
 	{
 		ValidatePlayerInstance();
-		NavigationAgent.TargetPosition = GlobalData.LastKnownPlayerPosition;
+		MoveAndSlide();
+	}
 
+	private void ProcessStateIdle(float delta)
+	{
+		ProcessSonar(delta, MinSonarPassiveTime, MaxSonarPassiveTime);
+		ProcessRoar((float)delta);
+	}
+
+	private void ProcessStateWalk(float delta)
+	{
+		ProcessSonar(delta, MinSonarPassiveTime, MaxSonarPassiveTime);
+		ProcessRoar((float)delta);
+		MoveTowards(walkTarget);
+	}
+
+	private void ProcessStateChase(float delta)
+	{
+		ProcessSonar(delta, MinSonarAggressiveTime, MaxSonarAggressiveTime);
+		MoveTowards(lastKnownPlayerPosition);
+	}
+
+	private void MoveTowards(Vector3 position)
+	{
+		NavigationAgent.TargetPosition = position;
 		var direction = (NavigationAgent.GetNextPathPosition() - GlobalPosition).Normalized();
 		var movementSpeed = GetMovementSpeed();
-
 		Velocity = direction * movementSpeed;
-		// MoveAndSlide();
 	}
 
 	private void ForceRoar()
@@ -81,13 +135,26 @@ public partial class Monster : CharacterBody3D
 		ProcessRoar(999999.0f);
 	}
 
+	private void ProcessSonar(float delta, float sonarMin, float sonarMax)
+	{
+		// Sonar is just a regular pulse coming out of the monster
+		timeLeftToSonar -= delta;
+		if (timeLeftToSonar < 0)
+		{
+			timeLeftToSonar = GetRandomBetween(sonarMin, sonarMax);
+			Vector3 sonarPosition = GlobalPosition;
+			QueuePulses(SonarPulses, sonarPosition, SonarPulseVelocity, SonarPulseLifetime);
+		}
+	}
+
 	private void ProcessRoar(float delta)
 	{
 		timeLeftToRoar -= delta;
 		if (timeLeftToRoar < 0)
 		{
-			timeLeftToRoar = GetRandomRoarTime();
-			OnRoar();
+			timeLeftToRoar = GetRandomBetween(MinRoarTime, MaxRoarTime);
+			Vector3 roarPosition = Eyes.GlobalPosition;
+			QueuePulses(RoarPulses, roarPosition, RoarPulseVelocity, RoarPulseLifetime);
 		}
 	}
 
@@ -131,40 +198,65 @@ public partial class Monster : CharacterBody3D
 		return WalkSpeed;
 	}
 
-	private float GetRandomRoarTime()
-	{
-		float diff = MaxRoarTime - MinRoarTime;
-		return MinRoarTime + (diff * (float)RANDOM.NextDouble());
-	}
-
-	private void ProduceRoarPulse()
+	private void ProducePulse(Vector3 position, float velocity, float lifetime)
 	{
 		if (!IsInsideTree())
 		{
 			return;
 		}
 
-		Vector3 roarPosition = Eyes.GlobalPosition;
-		float roarPulseRange = RoarPulseVelocity * RoarPulseLifetime;
-		ShaderControllerAutoload.Pulse(roarPosition, RoarPulseVelocity, roarPulseRange, RoarPulseLifetime, PulseType.ONLY_RING, ColorOverride.RED);
+		float range = RoarPulseVelocity * RoarPulseLifetime;
+		ShaderControllerAutoload.Pulse(position, velocity, range, lifetime, PulseType.ONLY_RING, ColorOverride.RED);
 	}
-	
-	private void OnRoar()
+
+	private Vector3 GetNextWalkPoint()
 	{
-		ProduceRoarPulse();
-		for (int i = 1; i < RoarPulses; i++)
+		// TODO: Decide randomly whether to wander around in place or choose another waypoint position.
+		// Also it may be good to consider how much time has been spent near the player to not overwhelm them.
+		return GetRandomMonsterWaypointPosition();
+	}
+
+	private Vector3 GetRandomMonsterWaypointPosition()
+	{
+		Array<Node> monsterWaypoints = GetTree().GetNodesInGroup(GROUP_MONSTER_WAYPOINT);
+		
+		List<Vector3> waypoints = new(monsterWaypoints.Count);
+		foreach (var node in monsterWaypoints)
+		{
+			if (node is Node3D waypoint)
+			{
+				waypoints.Add(waypoint.GlobalPosition);
+			}
+		}
+
+		waypoints.Sort((a, b) => a.DistanceSquaredTo(GlobalPosition).CompareTo(b.DistanceSquaredTo(GlobalPosition)));
+		GD.Print($"Waypotins: {String.Join(", ", waypoints)}");
+
+		return waypoints[1];
+	}
+
+	private void QueuePulses(int count, Vector3 position, float velocity, float lifetime)
+	{
+		ProducePulse(position, velocity, lifetime);
+		for (int i = 1; i < count; i++)
 		{
 			float delay = i * RoarPulseDelay;
 			var timer = GetTree().CreateTimer(delay);
-			timer.Timeout += ProduceRoarPulse;
+			timer.Timeout += () => ProducePulse(position, velocity, lifetime);
 		}
+	}
+
+	private static float GetRandomBetween(float min, float max)
+	{
+		float diff = max - min;
+		return min + (diff * (float)RANDOM.NextDouble());
 	}
 
 	private static string StateToAnimationName(MonsterState monsterState)
 	{
         return monsterState switch
         {
-			MonsterState.PATROL => ANIMATION_NAME_WALK,
+			MonsterState.WALK => ANIMATION_NAME_WALK,
 			MonsterState.CHASE => ANIMATION_NAME_CHASE,
             _ => ANIMATION_NAME_IDLE,
         };
