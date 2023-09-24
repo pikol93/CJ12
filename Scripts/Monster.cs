@@ -14,10 +14,6 @@ public partial class Monster : CharacterBody3D
 	private float WalkSpeed { get; set; } = 2.5f;
 	[Export]
 	private float RunSpeed { get; set; } = 5.0f;
-
-	private NavigationAgent3D NavigationAgent { get; set; }
-	private Node3D Eyes { get; set; }
-	private Character Player { get; set; }
 	[Export]
 	private float MinRoarTime { get; set; } = 20.0f;
 	[Export]
@@ -30,6 +26,10 @@ public partial class Monster : CharacterBody3D
 	private int RoarPulses { get; set; } = 3;
 	[Export]
 	private float RoarPulseDelay { get; set; } = 0.1f;
+
+	private NavigationAgent3D NavigationAgent { get; set; }
+	private Node3D Eyes { get; set; }
+	private Character Player { get; set; }
 
 	private MonsterState state = MonsterState.IDLE;
 
