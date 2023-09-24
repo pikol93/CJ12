@@ -1,3 +1,5 @@
+// #define EDITOR
+
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_toon, specular_disabled, shadows_disabled;
 
@@ -8,5 +10,9 @@ void vertex() {
 }
 
 void fragment() {
+#ifdef EDITOR
+	ALBEDO = vec3(1, 1, 1);
+#else 
 	ALBEDO = abs(world_normal);
+#endif
 }

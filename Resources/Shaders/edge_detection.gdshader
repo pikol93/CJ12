@@ -1,4 +1,4 @@
-// #define EDITOR
+#define EDITOR
 
 shader_type spatial;
 render_mode blend_mix, depth_prepass_alpha, cull_disabled, diffuse_lambert, specular_disabled;
