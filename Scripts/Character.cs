@@ -3,10 +3,16 @@ using Godot;
 
 public partial class Character : CharacterBody3D
 {
+	private static readonly StepPulseData STEP_PULSE_DATA_SNEAK = new(6.0f, 2.5f, 0.7f);
+	private static readonly StepPulseData STEP_PULSE_DATA_WALK = new(8.0f, 4.0f, 0.8f);
+	private static readonly StepPulseData STEP_PULSE_DATA_RUN = new(8.0f, 5.5f, 1.3f);
+
+	[Export]
+	private float SneakSpeed { get; set; } = 0.8f; 
 	[Export]
 	private float WalkSpeed { get; set; } = 2.0f;
 	[Export]
-	private float RunningSpeed { get; set; } = 5.0f;
+	private float RunSpeed { get; set; } = 5.0f;
 	[Export]
 	private float MouseSensitivity { get; set; } = 1.0f;
 	[Export]
@@ -20,6 +26,7 @@ public partial class Character : CharacterBody3D
 	private AudioStreamPlayer3D StepPlayer { get ;set; }
 	private float Pitch { get; set;}
 
+	private bool isSneaking = false;
 	private bool isRunning = false;
 	private float stepLeft;
 
@@ -32,8 +39,9 @@ public partial class Character : CharacterBody3D
 
     public override void _Process(double delta)
 	{
+		isSneaking = Input.IsActionPressed("sneak");
 		isRunning = Input.IsActionPressed("run");
-		float movementSpeed = isRunning ? RunningSpeed : WalkSpeed;
+		float movementSpeed = GetMovementSpeed();
 
 		GlobalData.LastKnownPlayerPosition = GlobalPosition;
 		Vector2 input = PlayerInputAutoload.MoveVector;
@@ -67,16 +75,48 @@ public partial class Character : CharacterBody3D
 			Neck.Rotation = new Vector3(Pitch, 0f, 0f);
 		}
 	}
+	private float GetMovementSpeed()
+	{
+		if (isRunning)
+		{
+			return RunSpeed;
+		}
+
+		if (isSneaking)
+		{
+			return SneakSpeed;
+		}
+
+		return WalkSpeed;
+	}
+
+	private StepPulseData GetStepPulseData()
+	{
+		if (isRunning)
+		{
+			return STEP_PULSE_DATA_RUN;
+		}
+
+		if (isSneaking)
+		{
+			return STEP_PULSE_DATA_SNEAK;
+		}
+
+		return STEP_PULSE_DATA_WALK;
+	}
 
     private void CreatePulse()
     {
-		Vector3 position = Neck.GlobalPosition;
+		var position = Neck.GlobalPosition;
 		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f);
     }
 
 	private void OnStep()
 	{
-		ShaderControllerAutoload.Pulse(GlobalPosition, 8.0f, 4.0f, 0.8f);
+		var stepPulseData = GetStepPulseData();
+		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime);
 		StepPlayer.Play();
 	}
+
+	private readonly record struct StepPulseData(float Velocity, float Range, float MaxLifetime);
 }
