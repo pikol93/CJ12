@@ -3,7 +3,7 @@ using Godot;
 
 public partial class ShaderControllerAutoload : Node
 {
-    private const int SONAR_MAX_DATA_COUNT = 16;
+    private const int SONAR_MAX_DATA_COUNT = 32;
     private const string PULSE_PARAM_POSITIONS = "pulse_positions";
     private const string PULSE_PARAM_TIMESTAMPS = "pulse_timestamps";
     private const string PULSE_PARAM_VELOCITY = "pulse_velocities";
@@ -136,6 +136,9 @@ public partial class ShaderControllerAutoload : Node
 
             positionArray[i] = pulseData.Position;
             timestampArray[i] = pulseData.Timestamp;
+            velocityArray[i] = pulseData.Velocity;
+            maxRangeArray[i] = pulseData.MaxRange;
+            maxLifetimeArray[i] = pulseData.MaxLifetime;
         }
 
         foreach (var sonarMaterial in SonarMaterials)

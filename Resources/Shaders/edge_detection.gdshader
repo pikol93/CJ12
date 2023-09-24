@@ -1,6 +1,8 @@
 shader_type spatial;
 render_mode blend_mix, depth_prepass_alpha, cull_disabled, diffuse_lambert, specular_disabled;
 
+const int PULSE_MAX_COUNT = 32;
+
 uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap;
 uniform sampler2D depth_texture : hint_depth_texture, filter_linear_mipmap; 
 
