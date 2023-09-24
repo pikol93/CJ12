@@ -108,7 +108,6 @@ public partial class ShaderControllerAutoload : Node
             var nextNode = node.Next;
             if (IsOutdated(node.Value.Timestamp, node.Value.MaxLifetime))
             {
-                GD.Print($"Removed node {node.Value}");
                 pulseDataList.Remove(node);
             }
 
@@ -169,7 +168,6 @@ public partial class ShaderControllerAutoload : Node
 
     private void OnClearOutdatedPulseDataTimerTimeout()
     {
-        GD.Print($"Pulse data clearing outdated. time counter seconds: {timeCounterSeconds}");
         ClearOutdatedPulseData();
     }
 

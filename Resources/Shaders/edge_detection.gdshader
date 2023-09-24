@@ -61,11 +61,15 @@ void fragment() {
 	vec3 pixel_world_position = world.xyz / world.w;
 	
 #ifdef EDITOR
-	int visiblitiy = VISIBLE;
+	int visibility = VISIBLE;
 #else
 	int visibility = INVISIBLE;
 #endif
 	for (int i = 0; i < PULSE_MAX_COUNT; i++) {
+		if (visibility == VISIBLE) {
+			break;
+		}
+		
 		float timestamp = pulse_timestamps[i];
 		if (timestamp < 0.01) {
 			break;
@@ -82,7 +86,6 @@ void fragment() {
 			}
 			else {
 				visibility = VISIBLE;
-				break;
 			}
 		}
 	}

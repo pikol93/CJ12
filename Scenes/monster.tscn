@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://bjgnvw551s2jc"]
+
+[ext_resource type="Script" path="res://Scripts/Monster.cs" id="1_bbldq"]
+[ext_resource type="Material" uid="uid://dtgqy8lqi4ujf" path="res://Resources/Materials/monster_shader.tres" id="1_v4far"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_torcf"]
+height = 2.5
+radius = 0.7
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_yteso"]
+material = ExtResource("1_v4far")
+radius = 0.7
+height = 2.5
+
+[node name="Monster" type="CharacterBody3D"]
+collision_layer = 4
+script = ExtResource("1_bbldq")
+NavigationAgentNodePath = NodePath("NavigationAgent3D")
+EyesNodePath = NodePath("EyesPosition")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+shape = SubResource("CylinderShape3D_torcf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+mesh = SubResource("CapsuleMesh_yteso")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="EyesPosition" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.93896, -0.462438)

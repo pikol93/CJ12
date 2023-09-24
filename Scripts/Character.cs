@@ -75,6 +75,17 @@ public partial class Character : CharacterBody3D
 			Neck.Rotation = new Vector3(Pitch, 0f, 0f);
 		}
 	}
+
+	public bool IsDead()
+	{
+		return false;
+	}
+
+	public Vector3 GetEyesPosition()
+	{
+		return Neck.GlobalPosition;
+	}
+
 	private float GetMovementSpeed()
 	{
 		if (isRunning)
