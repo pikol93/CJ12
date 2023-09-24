@@ -99,6 +99,9 @@ public partial class Monster : CharacterBody3D
 			case MonsterState.CHASE:
 				ProcessStateChase(floatDelta);
 				break;
+			case MonsterState.KILL:
+				ProcessStateKill(floatDelta);
+				break;
 		}
 
 		if (OS.IsDebugBuild())
@@ -154,6 +157,16 @@ public partial class Monster : CharacterBody3D
 		if (distanceLeft < TargetDistanceThreshold)
 		{
 			SetState(MonsterState.IDLE);
+		}
+	}
+
+	private void ProcessStateKill(float delta)
+	{
+		if (Player != null)
+		{
+			Vector3 direction = (Player.GlobalPosition - GlobalPosition).Normalized();
+			float rotation = Mathf.Atan2(-direction.X, -direction.Z);
+			Rotation = new Vector3(0, rotation, 0);
 		}
 	}
 
@@ -331,6 +344,7 @@ public partial class Monster : CharacterBody3D
         {
 			MonsterState.WALK => ANIMATION_NAME_WALK,
 			MonsterState.CHASE => ANIMATION_NAME_CHASE,
+			MonsterState.KILL => ANIMATION_NAME_KILL,
             _ => ANIMATION_NAME_IDLE,
         };
     } 
