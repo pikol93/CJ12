@@ -3,7 +3,7 @@
 shader_type spatial;
 render_mode blend_mix, depth_prepass_alpha, cull_disabled, diffuse_lambert, specular_disabled;
 
-const int PULSE_MAX_COUNT = 32;
+const int PULSE_MAX_COUNT = 256;
 const int VISIBLE = 0;
 const int INVISIBLE = 1;
 const int EDGE_CHECK = 2;

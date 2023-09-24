@@ -3,7 +3,7 @@ using Godot;
 
 public partial class ShaderControllerAutoload : Node
 {
-    private const int SONAR_MAX_DATA_COUNT = 32;
+    private const int SONAR_MAX_DATA_COUNT = 256;
     private const string PARAM_FORCE_EDGE_CHECK = "force_edge_check";
     private const string PULSE_PARAM_POSITIONS = "pulse_positions";
     private const string PULSE_PARAM_TIMESTAMPS = "pulse_timestamps";
