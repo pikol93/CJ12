@@ -6,13 +6,13 @@ using System.Runtime.CompilerServices;
 
 public partial class Monster : CharacterBody3D
 {
-    public readonly record struct PulseData
-    {
-        public Vector3 Position { get; init; }
-        public float Timestamp { get; init; }
-        public float Velocity { get; init; }
-        public float MaxLifetime { get; init; }
-    }
+	public readonly record struct PulseData
+	{
+		public Vector3 Position { get; init; }
+		public float Timestamp { get; init; }
+		public float Velocity { get; init; }
+		public float MaxLifetime { get; init; }
+	}
 
 	private const string ANIMATION_NAME_CHASE = "Chase";
 	private const string ANIMATION_NAME_IDLE = "Idle";
@@ -30,6 +30,8 @@ public partial class Monster : CharacterBody3D
 	private NodePath EyesNodePath { get; set; }
 	[Export]
 	private NodePath AnimationPlayerNodePath { get; set; } = new NodePath("monster/AnimationPlayer");
+	[Export]
+	private NodePath BreathingAudioPlayerNodePath { get; set; }
 	[Export]
 	private float WalkSpeed { get; set; } = 2.5f;
 	[Export]
@@ -70,10 +72,13 @@ public partial class Monster : CharacterBody3D
 	private float KillZoneRadius { get; set; } = 1.5f;
 	[Export]
 	private float TargetPlayerDistanceToEnemyWhenInKillState { get; set; } = 1.0f;
+	[Export]
+	private float MinimumTimeBetweenBreathingSounds { get; set; } = 10.0f;
 
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
 	private AnimationPlayer AnimationPlayer { get; set; }
+	private AudioStreamPlayer3D BreathingAudioPlayer { get; set; }
 	private Character Player { get; set; }
 
 	private MonsterState state = MonsterState.IDLE;
@@ -83,6 +88,7 @@ public partial class Monster : CharacterBody3D
 	private float idleTimeLeft = 0.0f;
 	private Vector3 lastKnownPlayerPosition = Vector3.Zero;
 	private Vector3 walkTarget = Vector3.Zero;
+	private float timeSinceLastBreathingPlay = 0.0f;
 
 	private float timePassed = 0.0f;
 
@@ -92,14 +98,15 @@ public partial class Monster : CharacterBody3D
 		NavigationAgent = this.GetNodeOrThrow<NavigationAgent3D>(NavigationAgentNodePath);
 		Eyes = this.GetNodeOrThrow<Node3D>(EyesNodePath);
 		AnimationPlayer = this.GetNodeOrThrow<AnimationPlayer>(AnimationPlayerNodePath);
+		BreathingAudioPlayer = this.GetNodeOrThrow<AudioStreamPlayer3D>(BreathingAudioPlayerNodePath);
 
 		SetState(state);
 
 		AnimationPlayer.AnimationFinished += OnAnimationFinished;
 	}
 
-    public override void _Process(double delta)
-    {
+	public override void _Process(double delta)
+	{
 		ValidatePlayerInstance();
 
 		float floatDelta = (float)delta;
@@ -129,9 +136,10 @@ public partial class Monster : CharacterBody3D
 		}
 
 		DetectPlayerWithPulses();
-    }
+		PlayBreathingIfNotAlreadyPlaying(floatDelta);
+	}
 
-    public override void _PhysicsProcess(double delta)
+	public override void _PhysicsProcess(double delta)
 	{
 		ValidatePlayerInstance();
 		MoveAndSlide();
@@ -225,20 +233,23 @@ public partial class Monster : CharacterBody3D
 		return distance;
 	}
 
-    private void DetectPlayerWithPulses()
-    {
+	private void DetectPlayerWithPulses()
+	{
 		var node = pulseDataList.First;
 		while (node != null)
 		{
 			var nextNode = node.Next;
 			float timeSincePulseDataCreation = timePassed - node.Value.Timestamp;
-			if (timeSincePulseDataCreation > node.Value.MaxLifetime) {
+			if (timeSincePulseDataCreation > node.Value.MaxLifetime)
+			{
 				pulseDataList.Remove(node);
 			}
-			else {
+			else
+			{
 				float distanceToPlayer = node.Value.Position.DistanceTo(Player.GlobalPosition);
 				float distanceTravelled = timeSincePulseDataCreation * node.Value.Velocity;
-				if (distanceToPlayer < distanceTravelled) {
+				if (distanceToPlayer < distanceTravelled)
+				{
 					pulseDataList.Remove(node);
 					OnSonaredPlayer(Player.GlobalPosition);
 				}
@@ -246,7 +257,22 @@ public partial class Monster : CharacterBody3D
 
 			node = nextNode;
 		}
-    }
+	}
+
+	private void PlayBreathingIfNotAlreadyPlaying(float delta)
+	{
+		timeSinceLastBreathingPlay += delta;
+		if (timeSinceLastBreathingPlay < MinimumTimeBetweenBreathingSounds)
+		{
+			return;
+		}
+
+		if (!BreathingAudioPlayer.Playing)
+		{
+			timeSinceLastBreathingPlay = 0.0f;
+			BreathingAudioPlayer.Play();
+		}
+	}
 
 	private void ForceRoar()
 	{
@@ -306,7 +332,7 @@ public partial class Monster : CharacterBody3D
 		}
 	}
 
-    private float GetMovementSpeed()
+	private float GetMovementSpeed()
 	{
 		if (state == MonsterState.CHASE)
 		{
@@ -330,7 +356,7 @@ public partial class Monster : CharacterBody3D
 			Position = position,
 			Velocity = velocity,
 			MaxLifetime = lifetime,
-			Timestamp = timePassed,	
+			Timestamp = timePassed,
 		};
 
 		pulseDataList.AddFirst(pulseData);
@@ -347,7 +373,7 @@ public partial class Monster : CharacterBody3D
 	private Vector3 GetRandomMonsterWaypointPosition()
 	{
 		Array<Node> monsterWaypoints = GetTree().GetNodesInGroup(GROUP_MONSTER_WAYPOINT);
-		
+
 		List<Vector3> waypoints = new(monsterWaypoints.Count);
 		foreach (var node in monsterWaypoints)
 		{
@@ -381,13 +407,14 @@ public partial class Monster : CharacterBody3D
 		Player.SetKillState(Eyes);
 	}
 
-    private void OnAnimationFinished(StringName animName)
-    {
-		if (animName == ANIMATION_NAME_KILL) {
+	private void OnAnimationFinished(StringName animName)
+	{
+		if (animName == ANIMATION_NAME_KILL)
+		{
 			ShaderControllerAutoload.DisableMonsterForceEdgeCheck();
 			// TODO: Change scene to indicate that the player lost
 		}
-    }
+	}
 
 	private void OnSonaredPlayer(Vector3 playerPosition)
 	{
@@ -396,7 +423,7 @@ public partial class Monster : CharacterBody3D
 		SetState(MonsterState.CHASE);
 	}
 
-    private static float GetRandomBetween(float min, float max)
+	private static float GetRandomBetween(float min, float max)
 	{
 		float diff = max - min;
 		return min + (diff * (float)RANDOM.NextDouble());
@@ -404,12 +431,12 @@ public partial class Monster : CharacterBody3D
 
 	private static string StateToAnimationName(MonsterState monsterState)
 	{
-        return monsterState switch
-        {
+		return monsterState switch
+		{
 			MonsterState.WALK => ANIMATION_NAME_WALK,
 			MonsterState.CHASE => ANIMATION_NAME_CHASE,
 			MonsterState.KILL => ANIMATION_NAME_KILL,
-            _ => ANIMATION_NAME_IDLE,
-        };
-    } 
+			_ => ANIMATION_NAME_IDLE,
+		};
+	}
 }

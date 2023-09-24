@@ -1,39 +1,56 @@
-[gd_scene load_steps=4 format=3 uid="uid://bjgnvw551s2jc"]
+[gd_scene load_steps=9 format=3 uid="uid://bjgnvw551s2jc"]
 
 [ext_resource type="Script" path="res://Scripts/Monster.cs" id="1_bbldq"]
 [ext_resource type="PackedScene" uid="uid://4msa8epy25jr" path="res://Resources/Models/monster.glb" id="2_q5ehf"]
+[ext_resource type="AudioStream" uid="uid://cfcgmsfvtmu53" path="res://Resources/Sounds/Breathing/monster_breathing1.ogg" id="3_s3qr3"]
+[ext_resource type="AudioStream" uid="uid://blyk12p1e0ku6" path="res://Resources/Sounds/Breathing/monster_breathing2.ogg" id="4_vbjjo"]
+[ext_resource type="AudioStream" uid="uid://qmxfgmdj56ui" path="res://Resources/Sounds/Breathing/monster_breathing3.ogg" id="5_tvsax"]
+[ext_resource type="AudioStream" uid="uid://b5glpcau4y6ir" path="res://Resources/Sounds/Breathing/monster_breathing4.ogg" id="6_gt647"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_torcf"]
 height = 2.5
 radius = 0.7
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_ise6w"]
+streams_count = 4
+random_pitch = 1.2
+stream_0/stream = ExtResource("3_s3qr3")
+stream_0/weight = 0.3
+stream_1/stream = ExtResource("4_vbjjo")
+stream_1/weight = 0.5
+stream_2/stream = ExtResource("5_tvsax")
+stream_2/weight = 1.0
+stream_3/stream = ExtResource("6_gt647")
+stream_3/weight = 1.0
 
 [node name="Monster" type="CharacterBody3D"]
 collision_layer = 4
 script = ExtResource("1_bbldq")
 NavigationAgentNodePath = NodePath("NavigationAgent3D")
 EyesNodePath = NodePath("EyesPosition")
-TargetPlayerDistanceToEnemyWhenInKillState = 1.77
+BreathingAudioPlayerNodePath = NodePath("EyesPosition/BreathingAudioPlayer")
+TargetPlayerDistanceToEnemyWhenInKillState = 1.7
 
 [node name="monster" parent="." instance=ExtResource("2_q5ehf")]
 transform = Transform3D(-1.5, 0, -1.31134e-07, 0, 1.5, 0, 1.31134e-07, 0, -1.5, 0, 0, 0)
 
 [node name="Skeleton3D" parent="monster/Armature" index="0"]
-bones/1/position = Vector3(0.0194607, 0.953492, 0.503151)
+bones/1/position = Vector3(1.11022e-16, 0.0128798, 0.762391)
 bones/1/rotation = Quaternion(3.14056e-08, 0.695552, 0.718475, 3.04036e-08)
 bones/2/rotation = Quaternion(0.136266, 4.33037e-08, -5.95637e-09, 0.990672)
-bones/3/rotation = Quaternion(0.34427, 0.0729708, -0.0247719, 0.935703)
-bones/4/position = Vector3(0.0864098, 0.241275, -0.0163577)
-bones/4/rotation = Quaternion(-0.0646605, -0.731489, -0.678696, 0.0107153)
+bones/3/rotation = Quaternion(0.228313, 8.49621e-25, -5.06958e-17, 0.973588)
+bones/4/position = Vector3(0.120612, 0.246801, -0.0222899)
+bones/4/rotation = Quaternion(0.123199, -0.108985, -0.980423, 0.10824)
 bones/5/rotation = Quaternion(0.00966161, 8.00046e-05, -0.0398127, 0.99916)
-bones/7/position = Vector3(-0.0976587, 0.246648, -0.0229125)
-bones/7/rotation = Quaternion(0.163874, 0.676854, 0.688773, 0.201511)
-bones/8/rotation = Quaternion(0.0346575, 0.0944489, 0.0814441, 0.991587)
-bones/10/rotation = Quaternion(-0.839953, 0.00967488, -0.0339365, 0.541511)
-bones/11/rotation = Quaternion(-0.00276685, 0.00023499, 4.2496e-06, 0.999996)
-bones/12/rotation = Quaternion(0.0234979, 0.531158, -0.846528, 0.0266266)
-bones/14/rotation = Quaternion(-0.823969, 0.0136702, -0.0362496, 0.565309)
-bones/15/rotation = Quaternion(-0.002428, -7.82823e-08, 1.08063e-09, 0.999997)
-bones/16/rotation = Quaternion(0.0272298, 0.527002, -0.848981, 0.0275579)
+bones/7/position = Vector3(-0.120612, 0.246801, -0.0222899)
+bones/7/rotation = Quaternion(0.12602, 0.125652, 0.980652, 0.0815626)
+bones/8/rotation = Quaternion(2.74411e-07, -4.64421e-08, 0.00536029, 0.999986)
+bones/10/rotation = Quaternion(-7.39414e-05, 0.299723, 0.954026, 0.000468251)
+bones/11/rotation = Quaternion(-0.486077, 0.000205362, 0.000746373, 0.873916)
+bones/12/rotation = Quaternion(0.600204, -0.000410208, -0.00024952, 0.799847)
+bones/14/rotation = Quaternion(-0.000465002, 0.229218, 0.973375, 0.000154966)
+bones/15/rotation = Quaternion(-0.51213, -6.48723e-08, 4.98303e-08, 0.858908)
+bones/16/rotation = Quaternion(0.661454, -0.000480561, 9.72983e-05, 0.749985)
 bones/17/rotation = Quaternion(0.372769, 2.91287e-07, -1.1702e-07, 0.927924)
 bones/18/position = Vector3(-0.0555882, 0.0937632, 0.0579153)
 bones/18/rotation = Quaternion(0, 0, 1, 0)
@@ -49,5 +66,12 @@ path_height_offset = 0.5
 
 [node name="EyesPosition" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.93896, -0.462438)
+
+[node name="BreathingAudioPlayer" type="AudioStreamPlayer3D" parent="EyesPosition"]
+stream = SubResource("AudioStreamRandomizer_ise6w")
+attenuation_model = 1
+max_db = -24.0
+autoplay = true
+max_distance = 15.0
 
 [editable path="monster"]
