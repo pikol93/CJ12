@@ -88,17 +88,21 @@ void fragment() {
 		float distanceToPulse = distance(pulsePosition, pixel_world_position);
 		int pulse_type = pulse_types[i];
 		if (distanceToPulse < range) {
-			vec3 pulse_color_override = pulse_color_overrides[i];
-			if (pulse_color_override.r > 0.1 && target_color.r <= 0.1) {
-				target_color = pulse_color_override;
-			}
 			
 			if (distanceToPulse < range - pulse_width) {
 				if (pulse_type != RING_ONLY) {
+					vec3 pulse_color_override = pulse_color_overrides[i];
+					if (pulse_color_override.r > 0.1 && target_color.r <= 0.1) {
+						target_color = pulse_color_override;
+					}
 					visibility = EDGE_CHECK;
 				}
 			}
 			else {
+				vec3 pulse_color_override = pulse_color_overrides[i];
+				if (pulse_color_override.r > 0.1 && target_color.r <= 0.1) {
+					target_color = pulse_color_override;
+				}
 				visibility = VISIBLE;
 			}
 		}
