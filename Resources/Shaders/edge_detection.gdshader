@@ -20,6 +20,7 @@ uniform vec4 edge_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform bool always_visible = false;
 
 // Variables set by script
+uniform bool force_edge_check = false;
 uniform vec3[PULSE_MAX_COUNT] pulse_positions;
 uniform float[PULSE_MAX_COUNT] pulse_timestamps;
 uniform float[PULSE_MAX_COUNT] pulse_velocities;
@@ -84,6 +85,10 @@ void fragment() {
 			}
 			break;
 		}
+	}
+	
+	if (force_edge_check && visibility == INVISIBLE) {
+		visibility = EDGE_CHECK;
 	}
 	
 	if (visibility == INVISIBLE) {

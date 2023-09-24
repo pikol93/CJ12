@@ -4,20 +4,25 @@ using Godot;
 public partial class ShaderControllerAutoload : Node
 {
     private const int SONAR_MAX_DATA_COUNT = 32;
+    private const string PARAM_FORCE_EDGE_CHECK = "force_edge_check";
     private const string PULSE_PARAM_POSITIONS = "pulse_positions";
     private const string PULSE_PARAM_TIMESTAMPS = "pulse_timestamps";
     private const string PULSE_PARAM_VELOCITY = "pulse_velocities";
     private const string PULSE_PARAM_MAX_RANGE = "pulse_max_ranges";
     private const string PULSE_PARAM_MAX_LIFETIME = "pulse_max_lifetimes";
+    private const string PATH_MONSTER_EDGE_DETECTION = "res://Resources/Materials/monster_edge_detection.tres";
+    private const string PATH_ENVIRONMENT_EDGE_DETECTION = "res://Resources/Materials/environment_edge_detection.tres";
 
     private static ShaderControllerAutoload Instance { get; set; }
 
     private List<string> SonarPaths { get; } = new() {
-        "res://Resources/Materials/monster_edge_detection.tres",
-        "res://Resources/Materials/environment_edge_detection.tres",
+        PATH_MONSTER_EDGE_DETECTION,
+        PATH_ENVIRONMENT_EDGE_DETECTION,
     };
 
     private List<ShaderMaterial> SonarMaterials { get; } = new();
+
+    private ShaderMaterial MonsterShaderMaterial { get; set; };
 
     private readonly LinkedList<PulseData> pulseDataList = new();
     private readonly Vector3[] positionArray = new Vector3[SONAR_MAX_DATA_COUNT];
@@ -36,6 +41,7 @@ public partial class ShaderControllerAutoload : Node
         {
             SonarMaterials.Add(ResourceLoader.Load<ShaderMaterial>(path));
         }
+        MonsterShaderMaterial = ResourceLoader.Load<ShaderMaterial>(PATH_MONSTER_EDGE_DETECTION);
 
         var clearOutdatedPulseDataTimer = new Timer
         {
@@ -67,6 +73,16 @@ public partial class ShaderControllerAutoload : Node
     public static void EraseSonarPulseData()
     {
         Instance.InternalEraseSonarPulseData();
+    }
+
+    public static void EnableMonsterForceEdgeCheck()
+    {
+        Instance.MonsterShaderMaterial.SetShaderParameter(PARAM_FORCE_EDGE_CHECK, true);
+    }
+
+    public static void DisableMonsterForceEdgeCheck()
+    {
+        Instance.MonsterShaderMaterial.SetShaderParameter(PARAM_FORCE_EDGE_CHECK, false);
     }
 
     private void InternalPulse(Vector3 from, float velocity, float maxRange, float maxLifetime)
