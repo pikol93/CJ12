@@ -8,6 +8,7 @@ public partial class Monster : CharacterBody3D
 	private const string ANIMATION_NAME_CHASE = "Chase";
 	private const string ANIMATION_NAME_IDLE = "Idle";
 	private const string ANIMATION_NAME_WALK = "Walk";
+	private const string ANIMATION_NAME_KILL = "Kill";
 	private const string GROUP_MONSTER_WAYPOINT = "monster_waypoint";
 
 	private static readonly Random RANDOM = new();
@@ -54,6 +55,8 @@ public partial class Monster : CharacterBody3D
 	private float RoarPulseDelay { get; set; } = 0.1f;
 	[Export]
 	private float TargetDistanceThreshold { get; set; } = 0.2f;
+	[Export]
+	private float KillZoneRadius { get; set; } = 0.5f;
 
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
@@ -70,15 +73,20 @@ public partial class Monster : CharacterBody3D
 
 	public override void _Ready()
 	{
+		ShaderControllerAutoload.DisableMonsterForceEdgeCheck();
 		NavigationAgent = this.GetNodeOrThrow<NavigationAgent3D>(NavigationAgentNodePath);
 		Eyes = this.GetNodeOrThrow<Node3D>(EyesNodePath);
 		AnimationPlayer = this.GetNodeOrThrow<AnimationPlayer>(AnimationPlayerNodePath);
 
 		SetState(state);
+
+		AnimationPlayer.AnimationFinished += OnAnimationFinished;
 	}
 
     public override void _Process(double delta)
     {
+		ValidatePlayerInstance();
+
 		float floatDelta = (float)delta;
 		switch (state)
 		{
@@ -113,6 +121,7 @@ public partial class Monster : CharacterBody3D
 		Velocity = Vector3.Zero;
 		ProcessSonar(delta, MinSonarPassiveTime, MaxSonarPassiveTime);
 		ProcessRoar((float)delta);
+		ProcessPlayerKill();
 
 		idleTimeLeft -= delta;
 		if (idleTimeLeft < 0)
@@ -127,6 +136,7 @@ public partial class Monster : CharacterBody3D
 	{
 		ProcessSonar(delta, MinSonarPassiveTime, MaxSonarPassiveTime);
 		ProcessRoar((float)delta);
+		ProcessPlayerKill();
 		float distanceLeft = MoveTowards(walkTarget);
 
 		if (distanceLeft < TargetDistanceThreshold)
@@ -138,11 +148,24 @@ public partial class Monster : CharacterBody3D
 	private void ProcessStateChase(float delta)
 	{
 		ProcessSonar(delta, MinSonarAggressiveTime, MaxSonarAggressiveTime);
+		ProcessPlayerKill();
 		float distanceLeft = MoveTowards(lastKnownPlayerPosition);
 
 		if (distanceLeft < TargetDistanceThreshold)
 		{
 			SetState(MonsterState.IDLE);
+		}
+	}
+
+	private void ProcessPlayerKill()
+	{
+		if (Player != null)
+		{
+			float distance = GlobalPosition.DistanceTo(Player.GlobalPosition);
+			if (distance < KillZoneRadius)
+			{
+				OnPlayerKill();
+			}
 		}
 	}
 
@@ -281,7 +304,22 @@ public partial class Monster : CharacterBody3D
 		}
 	}
 
-	private static float GetRandomBetween(float min, float max)
+	private void OnPlayerKill()
+	{
+		GD.Print("OnPlayerKill");
+		SetState(MonsterState.KILL);
+		ShaderControllerAutoload.EnableMonsterForceEdgeCheck();
+	}
+
+    private void OnAnimationFinished(StringName animName)
+    {
+		if (animName == ANIMATION_NAME_KILL) {
+			ShaderControllerAutoload.DisableMonsterForceEdgeCheck();
+			// TODO: Change scene to indicate that the player lost
+		}
+    }
+
+    private static float GetRandomBetween(float min, float max)
 	{
 		float diff = max - min;
 		return min + (diff * (float)RANDOM.NextDouble());
