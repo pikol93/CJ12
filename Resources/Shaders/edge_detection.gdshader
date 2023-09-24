@@ -11,6 +11,7 @@ uniform float depth_edge_detection_threshold : hint_range(0.0, 10.0) = 2.0;
 uniform float neighbour_distance : hint_range(0.0, 10.0) = 0.5;
 uniform vec4 albedo : source_color;
 uniform vec4 edge_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform bool always_visible = false;
 
 // Variables set by script
 uniform vec3[PULSE_MAX_COUNT] pulse_positions;
@@ -52,7 +53,7 @@ void fragment() {
 	vec4 world = CAMERA * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	vec3 pixel_world_position = world.xyz / world.w;
 	
-	bool isVisible = false;
+	bool isVisible = always_visible;
 	for (int i = 0; i < PULSE_MAX_COUNT; i++) {
 		float timestamp = pulse_timestamps[i];
 		if (timestamp < 0.01) {
