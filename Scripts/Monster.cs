@@ -4,8 +4,6 @@ using System;
 
 public partial class Monster : CharacterBody3D
 {
-	private const uint SIGHT_COLLISION_MASK = 1;
-
 	[Export]
 	private NodePath NavigationAgentNodePath { get; set; }
 	[Export]
@@ -14,10 +12,6 @@ public partial class Monster : CharacterBody3D
 	private float WalkSpeed { get; set; } = 2.5f;
 	[Export]
 	private float RunSpeed { get; set; } = 5.0f;
-	[Export]
-	private float PlayerNoticeThreshold { get; set; } = 1.0f;
-	[Export]
-	private float PlayerNoticeMaximum { get; set; } = 1.5f;
 
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
@@ -43,23 +37,12 @@ public partial class Monster : CharacterBody3D
 
 		Velocity = direction * movementSpeed;
 		MoveAndSlide();
-
-		HandlePlayerNotice((float)delta);
 	}
 
 	private void SetState(MonsterState state)
 	{
 		GD.Print($"Change state: {this.state} -> {state}");
 		this.state = state;
-	}
-
-	private void HandlePlayerNotice(float delta)
-	{
-		playerNotice += CanSeePlayer() ? delta : -delta;
-		if (playerNotice > PlayerNoticeThreshold && state != MonsterState.CHASE)
-		{
-			SetState(MonsterState.CHASE);
-		}
 	}
 
 	private void ValidatePlayerInstance()
@@ -82,27 +65,6 @@ public partial class Monster : CharacterBody3D
 			}
 		}
 	}
-
-    private bool CanSeePlayer()
-    {
-		if (Player == null)
-		{
-			return false;
-		}
-
-		Vector3 playerEyesPosition = Player.GetEyesPosition();
-		Vector3 eyesPosition = Eyes.GlobalPosition;
-
-		var rayParams = PhysicsRayQueryParameters3D.Create(eyesPosition, playerEyesPosition, SIGHT_COLLISION_MASK);
-		var intersectResult = GetWorld3D().DirectSpaceState.IntersectRay(rayParams);
-
-		if (intersectResult.Count <= 0) {
-			// No collision occurred.
-			return true;
-		}
-
-		return false;
-    }
 
     private float GetMovementSpeed()
 	{

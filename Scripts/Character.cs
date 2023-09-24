@@ -4,7 +4,7 @@ using Godot;
 public partial class Character : CharacterBody3D
 {
 	private static readonly StepPulseData STEP_PULSE_DATA_SNEAK = new(6.0f, 2.5f, 0.7f);
-	private static readonly StepPulseData STEP_PULSE_DATA_WALK = new(8.0f, 4.0f, 0.8f);
+	private static readonly StepPulseData STEP_PULSE_DATA_WALK = new(8.0f, 3.0f, 0.8f);
 	private static readonly StepPulseData STEP_PULSE_DATA_RUN = new(8.0f, 5.5f, 1.3f);
 
 	[Export]
@@ -119,13 +119,13 @@ public partial class Character : CharacterBody3D
     private void CreatePulse()
     {
 		var position = Neck.GlobalPosition;
-		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f);
+		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f, PulseType.ONLY_RING);
     }
 
 	private void OnStep()
 	{
 		var stepPulseData = GetStepPulseData();
-		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime);
+		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime, PulseType.NORMAL);
 		StepPlayer.Play();
 	}
 

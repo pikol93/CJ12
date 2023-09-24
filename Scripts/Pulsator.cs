@@ -72,6 +72,6 @@ public partial class Pulsator : Node3D
             }
         }
 
-        ShaderControllerAutoload.Pulse(position, PulseVelocity, PulseRange, PulseMaxLifetime);
+        ShaderControllerAutoload.Pulse(position, PulseVelocity, PulseRange, PulseMaxLifetime, PulseType.NORMAL);
     }
 }

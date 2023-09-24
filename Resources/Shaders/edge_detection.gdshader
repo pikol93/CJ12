@@ -1,4 +1,4 @@
-#define EDITOR
+// #define EDITOR
 
 shader_type spatial;
 render_mode blend_mix, depth_prepass_alpha, cull_disabled, diffuse_lambert, specular_disabled;
@@ -7,6 +7,9 @@ const int PULSE_MAX_COUNT = 256;
 const int VISIBLE = 0;
 const int INVISIBLE = 1;
 const int EDGE_CHECK = 2;
+
+const int NORMAL_PULSE = 0;
+const int RING_ONLY = 1;
 
 uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap;
 uniform sampler2D depth_texture : hint_depth_texture, filter_linear_mipmap; 
@@ -26,6 +29,7 @@ uniform float[PULSE_MAX_COUNT] pulse_timestamps;
 uniform float[PULSE_MAX_COUNT] pulse_velocities;
 uniform float[PULSE_MAX_COUNT] pulse_max_ranges;
 uniform float[PULSE_MAX_COUNT] pulse_max_lifetimes;
+uniform int[PULSE_MAX_COUNT] pulse_types;
 
 varying mat4 CAMERA;
 
@@ -80,9 +84,12 @@ void fragment() {
 		float range = min(max_range, velocity * pulse_lifetime);
 		vec3 pulsePosition = pulse_positions[i];
 		float distanceToPulse = distance(pulsePosition, pixel_world_position);
+		int pulse_type = pulse_types[i];
 		if (distanceToPulse < range) {
 			if (distanceToPulse < range - pulse_width) {
-				visibility = EDGE_CHECK;
+				if (pulse_type != RING_ONLY) {
+					visibility = EDGE_CHECK;
+				}
 			}
 			else {
 				visibility = VISIBLE;

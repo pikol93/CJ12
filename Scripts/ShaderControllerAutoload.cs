@@ -1,6 +1,12 @@
 using System.Collections.Generic;
 using Godot;
 
+public enum PulseType
+{
+    NORMAL,
+    ONLY_RING,
+}
+
 public partial class ShaderControllerAutoload : Node
 {
     private const int SONAR_MAX_DATA_COUNT = 256;
@@ -10,6 +16,7 @@ public partial class ShaderControllerAutoload : Node
     private const string PULSE_PARAM_VELOCITY = "pulse_velocities";
     private const string PULSE_PARAM_MAX_RANGE = "pulse_max_ranges";
     private const string PULSE_PARAM_MAX_LIFETIME = "pulse_max_lifetimes";
+    private const string PULSE_PARAM_TYPE = "pulse_types";
     private const string PATH_MONSTER_EDGE_DETECTION = "res://Resources/Materials/monster_edge_detection.tres";
     private const string PATH_ENVIRONMENT_EDGE_DETECTION = "res://Resources/Materials/environment_edge_detection.tres";
 
@@ -30,6 +37,7 @@ public partial class ShaderControllerAutoload : Node
     private readonly float[] velocityArray = new float[SONAR_MAX_DATA_COUNT];
     private readonly float[] maxRangeArray = new float[SONAR_MAX_DATA_COUNT];
     private readonly float[] maxLifetimeArray = new float[SONAR_MAX_DATA_COUNT];
+    private readonly int[] type = new int[SONAR_MAX_DATA_COUNT];
 
     private float timeCounterSeconds;
     private bool isSonarUpdateQueued;
@@ -65,9 +73,9 @@ public partial class ShaderControllerAutoload : Node
         }
     }
 
-    public static void Pulse(Vector3 from, float velocity, float maxRange, float maxLifetime)
+    public static void Pulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType)
     {
-        Instance.InternalPulse(from, velocity, maxRange, maxLifetime);
+        Instance.InternalPulse(from, velocity, maxRange, maxLifetime, pulseType);
     }
 
     public static void EraseSonarPulseData()
@@ -85,7 +93,7 @@ public partial class ShaderControllerAutoload : Node
         Instance.MonsterShaderMaterial.SetShaderParameter(PARAM_FORCE_EDGE_CHECK, false);
     }
 
-    private void InternalPulse(Vector3 from, float velocity, float maxRange, float maxLifetime)
+    private void InternalPulse(Vector3 from, float velocity, float maxRange, float maxLifetime, PulseType pulseType)
     {
         var pulseData = new PulseData()
         {
@@ -94,7 +102,10 @@ public partial class ShaderControllerAutoload : Node
             Velocity = velocity,
             MaxRange = maxRange,
             MaxLifetime = maxLifetime,
+            Type = PulseTypeToInteger(pulseType),
         };
+
+        GD.Print($"{pulseData}");
 
         pulseDataList.AddFirst(pulseData);
         QueueSonarUpdate();
@@ -154,6 +165,7 @@ public partial class ShaderControllerAutoload : Node
             velocityArray[i] = pulseData.Velocity;
             maxRangeArray[i] = pulseData.MaxRange;
             maxLifetimeArray[i] = pulseData.MaxLifetime;
+            type[i] = pulseData.Type;
         }
 
         foreach (var sonarMaterial in SonarMaterials)
@@ -163,12 +175,22 @@ public partial class ShaderControllerAutoload : Node
             sonarMaterial.SetShaderParameter(PULSE_PARAM_VELOCITY, velocityArray);
             sonarMaterial.SetShaderParameter(PULSE_PARAM_MAX_RANGE, maxRangeArray);
             sonarMaterial.SetShaderParameter(PULSE_PARAM_MAX_LIFETIME, maxLifetimeArray);
+            sonarMaterial.SetShaderParameter(PULSE_PARAM_TYPE, type);
         }
     }
 
     private void OnClearOutdatedPulseDataTimerTimeout()
     {
         ClearOutdatedPulseData();
+    }
+
+    private static int PulseTypeToInteger(PulseType pulseType)
+    {
+        return pulseType switch
+        {
+            PulseType.ONLY_RING => 1,
+            _ => 0,
+        };
     }
 
     public readonly record struct PulseData
@@ -179,5 +201,6 @@ public partial class ShaderControllerAutoload : Node
         public float Velocity { get; init; }
         public float MaxRange { get; init; }
         public float MaxLifetime { get; init; }
+        public int Type { get; init; }
     }
 }
