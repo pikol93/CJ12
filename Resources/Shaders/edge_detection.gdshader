@@ -1,3 +1,5 @@
+// #define EDITOR
+
 shader_type spatial;
 render_mode blend_mix, depth_prepass_alpha, cull_disabled, diffuse_lambert, specular_disabled;
 
@@ -53,7 +55,11 @@ void fragment() {
 	vec4 world = CAMERA * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	vec3 pixel_world_position = world.xyz / world.w;
 	
+#ifdef EDITOR
+	bool isVisible = true;
+#else
 	bool isVisible = always_visible;
+#endif
 	for (int i = 0; i < PULSE_MAX_COUNT; i++) {
 		float timestamp = pulse_timestamps[i];
 		if (timestamp < 0.01) {

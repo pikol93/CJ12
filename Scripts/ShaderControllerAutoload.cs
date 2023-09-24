@@ -74,7 +74,7 @@ public partial class ShaderControllerAutoload : Node
         var pulseData = new PulseData()
         {
             Position = from,
-            Timestamp = Time.GetTicksMsec() / 1000.0f,
+            Timestamp = timeCounterSeconds,
             Velocity = velocity,
             MaxRange = maxRange,
             MaxLifetime = maxLifetime,
