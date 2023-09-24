@@ -4,18 +4,29 @@ using Godot;
 public partial class Character : CharacterBody3D
 {
 	[Export]
-	private float MovementSpeed { get; set; }
+	private float MovementSpeed { get; set; } = 2.0f;
 	[Export]
-	private float MouseSensitivity { get; set; }
+	private float RunningSpeed { get; set; } = 5.0f;
+	[Export]
+	private float MouseSensitivity { get; set; } = 1.0f;
 	[Export]
 	private NodePath NeckNodePath { get; set; }
+	[Export]
+	private NodePath StepPlayerPath { get; set; }
+	[Export]
+	private float StepDistance { get; set; } = 2.0f;
 
 	private Node3D Neck { get; set; }
+	private AudioStreamPlayer3D StepPlayer { get ;set; }
 	private float Pitch { get; set;}
+
+	private float stepLeft;
 
     public override void _Ready()
     {
+		stepLeft = StepDistance;
 		Neck = this.GetNodeOrThrow<Node3D>(NeckNodePath);
+		StepPlayer = this.GetNodeOrThrow<AudioStreamPlayer3D>(StepPlayerPath);
     }
 
     public override void _Process(double delta)
@@ -25,6 +36,14 @@ public partial class Character : CharacterBody3D
 		Vector3 movementDirection = Transform.Basis * new Vector3(input.X, 0, -input.Y).Normalized();
 		Velocity = movementDirection * MovementSpeed;
 		MoveAndSlide();
+
+		float distanceTravelled = Velocity.Length() * (float)delta;
+		stepLeft -= distanceTravelled;
+		if (stepLeft <= 0.0f)
+		{
+			stepLeft = StepDistance;
+			OnStep();
+		}
 
 		if (Input.IsActionJustPressed("create_pulse")) {
 			CreatePulse();
@@ -50,4 +69,10 @@ public partial class Character : CharacterBody3D
 		Vector3 position = Neck.GlobalPosition;
 		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f);
     }
+
+	private void OnStep()
+	{
+		ShaderControllerAutoload.Pulse(GlobalPosition, 4.0f, 3.0f, 1.0f);
+		StepPlayer.Play();
+	}
 }

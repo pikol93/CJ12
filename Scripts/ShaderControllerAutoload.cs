@@ -45,7 +45,7 @@ public partial class ShaderControllerAutoload : Node
 
         var clearOutdatedPulseDataTimer = new Timer
         {
-            WaitTime = 1.0f,
+            WaitTime = 0.2f,
             Autostart = true,
         };
         clearOutdatedPulseDataTimer.Timeout += OnClearOutdatedPulseDataTimerTimeout;
