@@ -18,3 +18,5 @@ shader_parameter/pulse_timestamps = null
 shader_parameter/pulse_velocities = null
 shader_parameter/pulse_max_ranges = null
 shader_parameter/pulse_max_lifetimes = null
+shader_parameter/pulse_types = null
+shader_parameter/pulse_color_overrides = null

@@ -4,12 +4,17 @@ using System;
 
 public partial class Monster : CharacterBody3D
 {
+	private const string ANIMATION_NAME_CHASE = "Chase";
+	private const string ANIMATION_NAME_IDLE = "Idle";
+	private const string ANIMATION_NAME_WALK = "Walk";
 	private static readonly Random RANDOM = new();
 
 	[Export]
 	private NodePath NavigationAgentNodePath { get; set; }
 	[Export]
 	private NodePath EyesNodePath { get; set; }
+	[Export]
+	private NodePath AnimationPlayerNodePath { get; set; } = new NodePath("monster/AnimationPlayer");
 	[Export]
 	private float WalkSpeed { get; set; } = 2.5f;
 	[Export]
@@ -29,6 +34,7 @@ public partial class Monster : CharacterBody3D
 
 	private NavigationAgent3D NavigationAgent { get; set; }
 	private Node3D Eyes { get; set; }
+	private AnimationPlayer AnimationPlayer { get; set; }
 	private Character Player { get; set; }
 
 	private MonsterState state = MonsterState.IDLE;
@@ -40,6 +46,9 @@ public partial class Monster : CharacterBody3D
 	{
 		NavigationAgent = this.GetNodeOrThrow<NavigationAgent3D>(NavigationAgentNodePath);
 		Eyes = this.GetNodeOrThrow<Node3D>(EyesNodePath);
+		AnimationPlayer = this.GetNodeOrThrow<AnimationPlayer>(AnimationPlayerNodePath);
+
+		SetState(MonsterState.CHASE);
 	}
 
     public override void _Process(double delta)
@@ -86,6 +95,9 @@ public partial class Monster : CharacterBody3D
 	{
 		GD.Print($"Change state: {this.state} -> {state}");
 		this.state = state;
+
+		string animationName = StateToAnimationName(state);
+		AnimationPlayer.Play(animationName);
 	}
 
 	private void ValidatePlayerInstance()
@@ -147,4 +159,14 @@ public partial class Monster : CharacterBody3D
 			timer.Timeout += ProduceRoarPulse;
 		}
 	}
+
+	private static string StateToAnimationName(MonsterState monsterState)
+	{
+        return monsterState switch
+        {
+			MonsterState.PATROL => ANIMATION_NAME_WALK,
+			MonsterState.CHASE => ANIMATION_NAME_CHASE,
+            _ => ANIMATION_NAME_IDLE,
+        };
+    } 
 }

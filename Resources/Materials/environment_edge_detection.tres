@@ -5,8 +5,18 @@
 [resource]
 render_priority = 0
 shader = ExtResource("1_gby2k")
+shader_parameter/pulse_width = 0.05
 shader_parameter/normal_edge_detection_threshold = 0.001
 shader_parameter/depth_edge_detection_threshold = 1.0
 shader_parameter/neighbour_distance = 0.3
 shader_parameter/albedo = Color(0, 0, 0, 1)
 shader_parameter/edge_color = Color(1, 1, 1, 1)
+shader_parameter/always_visible = false
+shader_parameter/force_edge_check = false
+shader_parameter/pulse_positions = null
+shader_parameter/pulse_timestamps = null
+shader_parameter/pulse_velocities = null
+shader_parameter/pulse_max_ranges = null
+shader_parameter/pulse_max_lifetimes = null
+shader_parameter/pulse_types = null
+shader_parameter/pulse_color_overrides = null

@@ -114,9 +114,7 @@ public partial class ShaderControllerAutoload : Node
             Type = PulseTypeToInteger(pulseType),
             ColorOverride = ColorOverrideToVector3(colorOverride),
         };
-
-        GD.Print($"{pulseData}");
-
+        
         pulseDataList.AddFirst(pulseData);
         QueueSonarUpdate();
     }
