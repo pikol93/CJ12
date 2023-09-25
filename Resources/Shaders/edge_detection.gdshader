@@ -55,7 +55,6 @@ void vertex() {
 }
 
 void fragment() {
-	discard;
 	vec2 iuv = vec2(SCREEN_UV.x * VIEWPORT_SIZE.x, SCREEN_UV.y * VIEWPORT_SIZE.y);
 	
 	float depth = texture(depth_texture, SCREEN_UV).x;

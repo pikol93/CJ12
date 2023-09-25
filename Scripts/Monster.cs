@@ -424,6 +424,7 @@ public partial class Monster : CharacterBody3D
 		{
 			ShaderControllerAutoload.DisableMonsterForceEdgeCheck();
 			// TODO: Change scene to indicate that the player lost
+			GetTree().ReloadCurrentScene();
 		}
 	}
 
