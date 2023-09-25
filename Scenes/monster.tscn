@@ -24,7 +24,7 @@ stream_2/weight = 1.0
 stream_3/stream = ExtResource("6_gt647")
 stream_3/weight = 1.0
 
-[node name="Monster" type="CharacterBody3D"]
+[node name="Monster" type="CharacterBody3D" groups=["monsters"]]
 collision_layer = 4
 script = ExtResource("1_bbldq")
 NavigationAgentNodePath = NodePath("NavigationAgent3D")

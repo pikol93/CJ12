@@ -1,14 +1,28 @@
 using System;
+using System.Collections.Generic;
 using Godot;
+using Godot.Collections;
 
 public partial class Character : CharacterBody3D
 {
-	private static readonly StepPulseData STEP_PULSE_DATA_SNEAK = new(6.0f, 2.0f, 0.7f);
-	private static readonly StepPulseData STEP_PULSE_DATA_WALK = new(8.0f, 3.0f, 0.8f);
-	private static readonly StepPulseData STEP_PULSE_DATA_RUN = new(10.0f, 7.5f, 1.3f);
+	public readonly record struct PulseData
+	{
+		public Vector3 Position { get; init; }
+		public float Timestamp { get; init; }
+		public float Velocity { get; init; }
+		public float MaxLifetime { get; init; }
+	}
+
+	private const string GROUP_MONSTERS = "monsters";
+
+	private static readonly StepPulseData STEP_PULSE_DATA_SNEAK = new(6.0f, 1.0f, 0.0f);
+	private static readonly StepPulseData STEP_PULSE_DATA_WALK = new(8.0f, 2.0f, 0.8f);
+	private static readonly StepPulseData STEP_PULSE_DATA_RUN = new(10.0f, 3.5f, 1.3f);
+
+	private readonly LinkedList<PulseData> pulseDataList = new();
 
 	[Export]
-	private float SneakSpeed { get; set; } = 0.8f; 
+	private float SneakSpeed { get; set; } = 0.8f;
 	[Export]
 	private float WalkSpeed { get; set; } = 2.0f;
 	[Export]
@@ -23,6 +37,14 @@ public partial class Character : CharacterBody3D
 	private float StepDistance { get; set; } = 2.0f;
 	[Export]
 	private float KillPitchRotation { get; set; } = 0.5f;
+	[Export]
+	private float ManualPulseVelocity { get; set; } = 7.0f;
+	[Export]
+	private float ManualPulseRange { get; set; } = 7.0f;
+	[Export]
+	private float ManualPulseLifetime { get; set; } = 3.0f;
+	[Export]
+	private float PulseDetectionEpsilon { get; set; } = 2.0f;
 
 	private Node3D Neck { get; set; }
 	private AudioStreamPlayer3D StepPlayer { get; set; }
@@ -33,22 +55,26 @@ public partial class Character : CharacterBody3D
 	private bool isSneaking = false;
 	private bool isRunning = false;
 	private float stepLeft;
+	private float currentTime;
 
-    public override void _Ready()
-    {
+	public override void _Ready()
+	{
 		stepLeft = StepDistance;
 		Neck = this.GetNodeOrThrow<Node3D>(NeckNodePath);
 		StepPlayer = this.GetNodeOrThrow<AudioStreamPlayer3D>(StepPlayerPath);
-    }
+	}
 
-    public override void _Process(double delta)
+	public override void _Process(double delta)
 	{
+		currentTime += (float)delta;
 		if (MonsterEyes != null)
 		{
 			LookAt(MonsterEyes.GlobalPosition, Vector3.Up);
 			Neck.Rotation = new Vector3(KillPitchRotation, 0.0f, 0.0f);
 			return;
 		}
+
+		ProcessPulseNotifyingMonsters();
 
 		isSneaking = Input.IsActionPressed("sneak");
 		isRunning = Input.IsActionPressed("run");
@@ -68,8 +94,9 @@ public partial class Character : CharacterBody3D
 			OnStep();
 		}
 
-		if (Input.IsActionJustPressed("create_pulse")) {
-			CreatePulse();
+		if (Input.IsActionJustPressed("create_pulse"))
+		{
+			CreateManualPulse();
 		}
 	}
 
@@ -107,6 +134,42 @@ public partial class Character : CharacterBody3D
 		return Neck.GlobalPosition;
 	}
 
+	private void ProcessPulseNotifyingMonsters()
+	{
+		Array<Node> nodes = GetTree().GetNodesInGroup(GROUP_MONSTERS);
+
+		foreach (var node in nodes)
+		{
+			if (node is not Monster monster)
+			{
+				continue;
+			}
+
+			var pulseNode = pulseDataList.First;
+			while (pulseNode != null)
+			{
+				var nextNode = pulseNode.Next;
+				float timeSincePulseDataCreation = currentTime - pulseNode.Value.Timestamp;
+				if (timeSincePulseDataCreation > pulseNode.Value.MaxLifetime)
+				{
+					pulseDataList.Remove(pulseNode);
+				}
+				else
+				{
+					float distanceToMonster = pulseNode.Value.Position.DistanceTo(monster.GlobalPosition);
+					float distanceTravelled = (timeSincePulseDataCreation * pulseNode.Value.Velocity) - PulseDetectionEpsilon;
+					if (distanceToMonster < distanceTravelled)
+					{
+						pulseDataList.Remove(pulseNode);
+						monster.NotifyPlayerPulse(pulseNode.Value.Position);
+					}
+				}
+
+				pulseNode = nextNode;
+			}
+		}
+	}
+
 	private float GetMovementSpeed()
 	{
 		if (isRunning)
@@ -137,16 +200,36 @@ public partial class Character : CharacterBody3D
 		return STEP_PULSE_DATA_WALK;
 	}
 
-    private void CreatePulse()
-    {
-		var position = Neck.GlobalPosition;
-		ShaderControllerAutoload.Pulse(position, 7.0f, 15.0f, 3f);
-    }
+	private void CreateManualPulse()
+	{
+		var position = GlobalPosition;
+		CreatePulse(position, ManualPulseVelocity, ManualPulseRange, ManualPulseLifetime, false);
+	}
+
+	private void CreatePulse(Vector3 position, float velocity, float range, float maxLifetime, bool shouldAlertMonster = true)
+	{
+		if (shouldAlertMonster)
+		{
+			float alertLifetime = range / velocity;
+
+			var pulseData = new PulseData()
+			{
+				Position = position,
+				Velocity = velocity,
+				Timestamp = currentTime,
+				MaxLifetime = alertLifetime,
+			};
+
+			pulseDataList.AddFirst(pulseData);
+		}
+
+		ShaderControllerAutoload.Pulse(position, velocity, range, maxLifetime);
+	}
 
 	private void OnStep()
 	{
 		var stepPulseData = GetStepPulseData();
-		ShaderControllerAutoload.Pulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime);
+		CreatePulse(GlobalPosition, stepPulseData.Velocity, stepPulseData.Range, stepPulseData.MaxLifetime);
 		StepPlayer.Play();
 	}
 

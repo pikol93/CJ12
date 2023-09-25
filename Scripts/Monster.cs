@@ -149,6 +149,12 @@ public partial class Monster : CharacterBody3D
 		MoveAndSlide();
 	}
 
+	public void NotifyPlayerPulse(Vector3 position)
+	{
+		lastKnownPlayerPosition = position;
+		SetState(MonsterState.CHASE);
+	}
+
 	private void ProcessStateIdle(float delta)
 	{
 		Velocity = Vector3.Zero;
