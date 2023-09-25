@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://c320ja8aaf6s3"]
+
+[ext_resource type="PackedScene" uid="uid://bcfc28acqypxl" path="res://Resources/Models/pot.glb" id="1_t87e1"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wnk62"]
+size = Vector3(0.32, 0.28, 0.29)
+
+[node name="Pot" type="StaticBody3D"]
+
+[node name="pot" parent="." instance=ExtResource("1_t87e1")]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, -3.37464, 0, 1.63458)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.156946, 0)
+shape = SubResource("BoxShape3D_wnk62")

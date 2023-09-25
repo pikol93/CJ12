@@ -1,8 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://dkmkg4h1cap77"]
+[gd_scene load_steps=3 format=3 uid="uid://dkmkg4h1cap77"]
 
 [ext_resource type="PackedScene" uid="uid://cfqvtb7tbbm26" path="res://Resources/Models/komoda.glb" id="1_b1c17"]
 
-[node name="Node3D" type="Node3D"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_w3g67"]
+size = Vector3(1, 1.047, 0.46471)
+
+[node name="Node3D" type="StaticBody3D"]
 
 [node name="komoda" parent="." instance=ExtResource("1_b1c17")]
 transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.369404, -0.0353743)
+shape = SubResource("BoxShape3D_w3g67")
